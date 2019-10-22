@@ -285,21 +285,55 @@ Soit, pour $1 \le i \le N$ et une certaine valeur k une valuation $\{x_{i 0 k v_
 
 D'après i, $x_{i 0 k v_0} = s_i$ et $x_{i k k v_k} = t_i$. Les chemins correspondants commencent bien par s et finissent par t. \newline
 
-D'après ii, il existe un sommet v pour chaque position j pour chaque graphe i  tel que $x_{i j k v}$ est vrai. Donc chaque position est occupée par un sommet. De plus, d'après iii, pour chaque sommet occupant une position il y en a aucun autre occupant cette même position.
+D'après ii, il existe un sommet v pour chaque position j pour chaque graphe i  tel que $x_{i j k v}$ est vrai. Donc chaque position est occupée par un sommet. De plus, d'après iii, pour chaque sommet occupant une position il y en a aucun autre occupant cette même position. \newline
 
-D'après iv, chaque position j de chaque graphe i est occupé par un sommet unique.
+D'après iv, chaque position j de chaque graphe i est occupé par un sommet unique.\newline
 
-Enfin, d'après v, les sommets $v_0, ..., v_k$ sont voisins les uns les autres, formant un chemin.
+Enfin, d'après v, les sommets $v_0, ..., v_k$ sont voisins les uns les autres, formant un chemin.\newline
+
+La valuation satisfaisant représente bien un chemin simple et valide de longueur k dans tous les graphes $G_i$.
+\newpage
 \item 
+On en déduit que la réduction Distance Commune $\le_p$ SAT est une disjonction de la formule précédente, avec k allant de 0 à $k_{max}$. \newline
+Soit $\varphi(k, G_1, ..., G_N) = i \land ii \land iii \land iv \land v$ la formule précédente. La formule est alors 
+$\lor_{0 \le k \le k_{max}} \varphi(k, G_1, ..., G_N)$.
 \end{enumerate}
 \item \begin{enumerate}[label=(\alph*)]
 \item 
+Dans cette partie, nous utilisons la formule $\varphi(k, G_1, ..., G_N) = i \land ii \land iii \land iv \land v$.
 \item 
-\item 
-\item 
-\end{enumerate}
-\item Notre formule est déjà en forme normale conjonctive.
-\end{enumerate}
 
+\begin{algorithm}
+\KwData{G1= (V1, E1, s1, t1), ... , GN= (VN, EN, sN, tN)}
+\KwResult{Retourne s’il existe un entier n tel que chacun des graphes G1,... , GN possède un chemin simple et valide de longueur n}
+N = Nombre de paramètres\;
+min = $|V_1|$\;
 
+\For{i allant de 2 à N}{
+    \If{$|V_i| <$ min}{
+        min = $|V_i|$\;
+    }
+}
+
+$k_{max}$ = min - 1\;
+\BlankLine
+
+\For{k allant de 0 à $k_{max}$}{
+    \If{$\varphi$(k, G1, ..., G2) résolvable}{
+        return OUI\;
+    }
+}
+
+return NON\;
+\end{algorithm}
+
+Nous n'avons pas moins de variables sur l'ensemble du programme qu'à la question précédente car nous utilisons la formule de l'exercice précédent.
+\item 
+L'avantage de découper en sous formules est que l'on peut s'arrêter dès que nous trouvons une valuation satisfaisante pour un certain k. Nous ne testons pas les autres.
+\item 
+Cette approche est équivalent à la précédente car nous essayons de trouver une valuation satisfaisant pour k allant de 0 à $k_{max}$, et si on trouve au moins une valuation satisfaisante on répond oui.
+\item Pour chaque k, la formule que nous utilisons est en CNF.
+
+\end{enumerate}
+\end{enumerate}
 \end{document}
