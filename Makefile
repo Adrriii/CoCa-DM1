@@ -3,7 +3,8 @@
 FILESPARS	= $(wildcard parser/src/*.c)
 FILESSRC	= $(wildcard src/*.c)
 CC			= g++
-CFLAGS		= -g -ansi -Iinclude -Iparser/include -Iparser -lz3
+CFLAGS		= -g -ansi -Iinclude -Iparser/include -Iparser
+LDFLAGS		= -lz3
 OBJPARS		= $(FILESPARS:parser/src/%.c=build/%.o)
 OBJSRC		= $(FILESSRC:src/%.c=build/%.o)
 OBJ 		= build/Parser.o build/Lexer.o $(OBJPARS) $(OBJSRC) 
@@ -12,15 +13,15 @@ OBJ 		= build/Parser.o build/Lexer.o $(OBJPARS) $(OBJSRC)
 all: equalPath doc
 
 equalPath: $(OBJ) 
-		$(CC) $(CFLAGS) $(OBJ) -o equalPath -lz3
+		$(CC) $(CFLAGS) $(OBJ) -o equalPath $(LDFLAGS)
 
 build/Lexer.o: parser/Lexer.c parser/Parser.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $< -o $@ -lz3
+		$(CC) -c $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 build/Parser.o: parser/Parser.c parser/Lexer.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $< -o $@ -lz3
+		$(CC) -c $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 parser/Lexer.c:	parser/Lexer.l 
 		flex parser/Lexer.l
@@ -35,25 +36,25 @@ parser/Parser.c:	parser/Parser.y parser/Lexer.c
 
 build/%.o:	src/%.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
+		$(CC) -c $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/%.o:	parser/src/%.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
+		$(CC) -c $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/graphUsage.o: examples/graphUsage.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
+		$(CC) -c $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 graphParser: build/Lexer.o build/Parser.o $(OBJPARS) build/Graph.o build/graphUsage.o
-		$(CC) $(CFLAGS) $^ -o $@ -lz3
+		$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/Z3Example.o: examples/Z3Example.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
+		$(CC) -c $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 Z3Example: build/Z3Example.o build/Z3Tools.o
-		$(CC) $(CFLAGS) $^ -o $@ -lz3
+		$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 .PHONY: doc
 doc:
