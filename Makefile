@@ -16,11 +16,11 @@ equalPath: $(OBJ)
 
 build/Lexer.o: parser/Lexer.c parser/Parser.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $< -o $@
+		$(CC) -c $(CFLAGS) $< -o $@ -lz3
 
 build/Parser.o: parser/Parser.c parser/Lexer.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $< -o $@
+		$(CC) -c $(CFLAGS) $< -o $@ -lz3
 
 parser/Lexer.c:	parser/Lexer.l 
 		flex parser/Lexer.l
@@ -35,25 +35,25 @@ parser/Parser.c:	parser/Parser.y parser/Lexer.c
 
 build/%.o:	src/%.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@
+		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
 
 build/%.o:	parser/src/%.c
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@
+		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
 
 build/graphUsage.o: examples/graphUsage.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@
+		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
 
 graphParser: build/Lexer.o build/Parser.o $(OBJPARS) build/Graph.o build/graphUsage.o
-		$(CC) $(CFLAGS) $^ -o $@
+		$(CC) $(CFLAGS) $^ -o $@ -lz3
 
 build/Z3Example.o: examples/Z3Example.c 
 		mkdir -p build
-		$(CC) -c $(CFLAGS) $^ -o $@
+		$(CC) -c $(CFLAGS) $^ -o $@ -lz3
 
 Z3Example: build/Z3Example.o build/Z3Tools.o
-		$(CC) $(CFLAGS) $^ -o $@
+		$(CC) $(CFLAGS) $^ -o $@ -lz3
 
 .PHONY: doc
 doc:
