@@ -144,6 +144,53 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
     );
 }
 
+/**
+ * Chaque sommet occupe soit une position unique, soit aucune position.
+ **/
+static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
+
+    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+        int size = orderG(graphs[currentGraph]);
+        Z3_ast* orFormula = (Z3_ast*) malloc(size * k * (k - 1));
+
+        for (int node = 0; node < orderG(graphs[currentGraph]); node++) {
+            for (int i = 0; i < k; i++) {
+                int index = 0;
+                for (int j = 0; j < k; j++) {
+                    if (i == j) {
+                        continue;
+                    }
+
+                    Z3_ast tmpFormula[] = {
+                        Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, i, k, node)),
+                        Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, j, k, node))
+                    };
+
+                    orFormula[node * size + k * i + j] = Z3_mk_or(
+                        ctx,
+                        2,
+                        tmpFormula
+                    );
+
+                    index++;
+                }
+            }
+        }
+
+        andFormula[currentGraph] = Z3_mk_and(
+            ctx,
+            size * k * (k - 1),
+            orFormula
+        );
+    }
+
+    return Z3_mk_and(
+        ctx,
+        numGraphs,
+        andFormula
+    );
+}
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
     return 0;
