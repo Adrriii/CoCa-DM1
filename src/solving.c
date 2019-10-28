@@ -12,6 +12,9 @@ Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node
     return mk_bool_var(ctx, name);
 }
 
+/**
+ * @brief return the index of the graph's source node. 
+ **/
 static unsigned getSourceNode(Graph graph) {
     int node;
     for (node = 0; node < orderG(graph) && !isSource(graph, node); node++);
@@ -19,6 +22,9 @@ static unsigned getSourceNode(Graph graph) {
     return node;
 }
 
+/**
+ * @brief return the index of the graph's target node. 
+ **/
 static unsigned getTargetNode(Graph graph) {
     int node;
     for (node = 0; node < orderG(graph) && !isTarget(graph, node); node++);
@@ -26,8 +32,11 @@ static unsigned getTargetNode(Graph graph) {
     return node;
 }
 
+/**
+ * Le chemin de chaque graphe i commence par s_i et finit par t_k.
+ **/
 static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
-    Z3_ast formula[numGraphs];
+    Z3_ast *formula = (Z3_ast*) malloc (numGraphs * sizeof(Z3_ast));
     
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         Z3_ast tmpFormula[] = {
@@ -46,6 +55,45 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
         ctx,
         numGraphs,
         formula
+    );
+}
+
+/**
+ * Chaque position du chemin est occupée par au moins 1 sommet.
+ **/
+static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    Z3_ast **orFormula = (Z3_ast **) malloc (numGraphs * sizeof (Z3_ast *));
+    Z3_ast *andFormula = (Z3_ast *) malloc (numGraphs * sizeof (Z3_ast));
+
+    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+        orFormula[currentGraph] = (Z3_ast*) malloc((k - 2) * sizeof(Z3_ast));
+
+        for (int position = 1; position < k - 1; position++) {
+            orFormula[currentGraph][position] = getNodeVariable(ctx, currentGraph, position, k, 0);
+            for (int node = 1; node < orderG(graphs[currentGraph]); node++) {
+                Z3_ast tmpFormula[] = {
+                    getNodeVariable(ctx, currentGraph, position, k, node),
+                    orFormula[currentGraph][position]
+                };
+
+                orFormula[currentGraph][position] = Z3_mk_or(
+                    ctx,
+                    2,
+                    tmpFormula
+                );
+            }
+        }
+        andFormula[currentGraph] = Z3_mk_and(
+            ctx,
+            k - 2,
+            orFormula[currentGraph]
+        );
+    }
+
+    return Z3_mk_and(
+        ctx,
+        numGraphs,
+        andFormula
     );
 }
 
