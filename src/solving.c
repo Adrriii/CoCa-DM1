@@ -252,5 +252,17 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 }
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
-    return 0;
+    Z3_ast formulaParts[] = {
+        firstPartFormula(ctx, graphs, numGraphs, pathLength),
+        secondPartFormula(ctx, graphs, numGraphs, pathLength),
+        thirdPartFormula(ctx, graphs, numGraphs, pathLength),
+        fourthPartFormula(ctx, graphs, numGraphs, pathLength),
+        fifthPartFormula(ctx, graphs, numGraphs, pathLength)
+    };
+
+    return Z3_mk_and(
+        ctx,
+        5,
+        formulaParts
+    );
 }
