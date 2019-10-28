@@ -192,6 +192,65 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
     );
 }
 
+/**
+ * Les sommets occupant les positions forment bien un chemin.
+ **/
+static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    Z3_ast* andFormulaFinal = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
+    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+
+        Z3_ast* andFormula = (Z3_ast*) malloc(k - 1);
+        for(int i = 0; i < k - 1; i++) {
+            int size = orderG(graphs[currentGraph]);
+            Z3_ast* orFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * size);
+
+
+            for (int firstNode = 0; firstNode < size; firstNode++) {
+                Z3_ast* orEdgeFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]));
+                int index = 0;
+
+                for (int secondNode = 0; secondNode < size; secondNode++) {
+                    if (isEdge(graphs[currentGraph], firstNode, secondNode)) {
+                        Z3_ast tmpFormula[] = {
+                            Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, i, k, firstNode)),
+                            getNodeVariable(ctx, currentGraph, i + 1, k, secondNode)
+                        };
+
+                        orEdgeFormula[index++] = Z3_mk_or(
+                            ctx,
+                            2,
+                            tmpFormula
+                        );
+                    }
+                }
+
+                orFormula[firstNode] = Z3_mk_or(
+                    ctx,
+                    index,
+                    orEdgeFormula
+                );
+            }
+
+            andFormula[i] = Z3_mk_and(
+                ctx,
+                size,
+                orFormula
+            );
+        }
+        andFormulaFinal[currentGraph] = Z3_mk_and(
+            ctx,
+            numGraphs,
+            andFormula
+        );
+    }
+
+    return Z3_mk_and(
+        ctx,
+        numGraphs,
+        andFormulaFinal
+    );
+}
+
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
     return 0;
 }
