@@ -5,6 +5,8 @@
 #include <Graph.h>
 #include <Parsing.h>
 
+#include "Solving.h"
+
 /**
  * Remove ?
  **/ 
@@ -25,7 +27,7 @@ $$$\n\
 '$$c          .e$$$$$$$$e\n\
  \"$$b.   .e$*\"     \"$$$$$$$\n\
    \"*$$$*\"\n\
-   \e[0m Devoir maison Complexité et Calculabilité\n\n\n");
+   \e[0m \n\tDevoir maison Complexité et Calculabilité\n\n\n");
 }
 
 // TODO : desactivate for return
@@ -46,6 +48,16 @@ void printd(const char* message) {
     if (DEBUG) {
         printf("\n\e[31mDEBUG Message -> \e[0m%s\n", message);
     }
+}
+
+void debugFormula(Graph* graphs, unsigned numGraphs, int pathLength) {
+    Z3_context ctx = makeContext();
+
+    Z3_ast result = graphsToPathFormula(ctx, graphs, numGraphs, pathLength);
+
+    printf("\n\nResult : \n\n%s\n", Z3_ast_to_string(ctx, result));
+
+    Z3_del_context(ctx);
 }
 
 Graph* loadGraphs(int argc, char**argv, int optind) {
@@ -151,7 +163,6 @@ int main(int argc, char **argv) {
             filename = optarg;
             break;
 
-
         default:
             usage(stderr);
             exit(EXIT_FAILURE);
@@ -160,6 +171,22 @@ int main(int argc, char **argv) {
     }
 
     Graph* graphs = loadGraphs(argc, argv, optind);
+    int numberGraphs = argc - optind;
+
+
+    /**
+     *  It's time to debug..
+     **/
+
+    debugFormula(graphs, numberGraphs, 4);
+
+
+    // Free graphs
+    for (int i = 0; i < numberGraphs; i++) {
+        deleteGraph(graphs[i]);
+    }
+
+    free(graphs);
 
     return EXIT_SUCCESS;
 }
