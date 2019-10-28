@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <Graph.h>
+#include <Parsing.h>
 
 /**
  * Remove ?
@@ -44,6 +46,18 @@ void printd(const char* message) {
     if (DEBUG) {
         printf("\n\e[31mDEBUG Message -> \e[0m%s\n", message);
     }
+}
+
+Graph* loadGraphs(int argc, char**argv, int optind) {
+    Graph* graphs = (Graph *) malloc((argc - optind) * sizeof(Graph));
+
+    printd("Loading graphs : ");
+    for (int i = optind; i < argc; i++) {
+        printd(argv[i]);
+        graphs[i - optind] = getGraphFromFile(argv[i]);
+    }
+
+    return graphs;
 }
 
 /**
@@ -137,12 +151,15 @@ int main(int argc, char **argv) {
             filename = optarg;
             break;
 
+
         default:
             usage(stderr);
             exit(EXIT_FAILURE);
             break;
         }
     }
+
+    Graph* graphs = loadGraphs(argc, argv, optind);
 
     return EXIT_SUCCESS;
 }
