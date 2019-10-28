@@ -33,7 +33,7 @@ static unsigned getTargetNode(Graph graph) {
 }
 
 /**
- * Le chemin de chaque graphe i commence par s_i et finit par t_k.
+ * @brief Le chemin de chaque graphe i commence par s_i et finit par t_k.
  **/
 static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     Z3_ast *formula = (Z3_ast*) malloc (numGraphs * sizeof(Z3_ast));
@@ -59,7 +59,7 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 }
 
 /**
- * Chaque position du chemin est occupée par au moins 1 sommet.
+ * @brief Chaque position du chemin est occupée par au moins 1 sommet.
  **/
 static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     Z3_ast **orFormula = (Z3_ast **) malloc (numGraphs * sizeof (Z3_ast *));
@@ -69,20 +69,23 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         orFormula[currentGraph] = (Z3_ast*) malloc((k - 2) * sizeof(Z3_ast));
 
         for (int position = 1; position < k - 1; position++) {
-            orFormula[currentGraph][position] = getNodeVariable(ctx, currentGraph, position, k, 0);
+            orFormula[currentGraph][position - 1] = getNodeVariable(ctx, currentGraph, position, k, 0);
+
             for (int node = 1; node < orderG(graphs[currentGraph]); node++) {
                 Z3_ast tmpFormula[] = {
                     getNodeVariable(ctx, currentGraph, position, k, node),
-                    orFormula[currentGraph][position]
+                    orFormula[currentGraph][position - 1]
                 };
 
-                orFormula[currentGraph][position] = Z3_mk_or(
+                orFormula[currentGraph][position - 1] = Z3_mk_or(
                     ctx,
                     2,
                     tmpFormula
                 );
             }
         }
+
+        // Plante ici
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
             k - 2,
@@ -98,7 +101,7 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
 }
 
 /**
- * Chaque position 0 < j < k est occupée par au maximum un sommet.
+ * @brief Chaque position 0 < j < k est occupée par au maximum un sommet.
  **/
 static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
@@ -145,7 +148,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 }
 
 /**
- * Chaque sommet occupe soit une position unique, soit aucune position.
+ * @brief Chaque sommet occupe soit une position unique, soit aucune position.
  **/
 static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
@@ -193,7 +196,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
 }
 
 /**
- * Les sommets occupant les positions forment bien un chemin.
+ * @brief Les sommets occupant les positions forment bien un chemin.
  **/
 static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     Z3_ast* andFormulaFinal = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
