@@ -15,9 +15,11 @@
 
 #include "Graph.h"
 #include <z3.h>
+#include "Z3Tools.h"
 
 /**
- * @brief Generates a formula consisting of a variable representing the fact that @p node of graph number @p number is at position @p position of an accepting path.
+ * @brief Generates a formula consisting of a variable representing the fact that @p node of graph
+ * number @p number is at position @p position of an accepting path.
  * 
  * @param ctx The solver context.
  * @param number The number of the graph.
