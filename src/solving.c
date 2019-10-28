@@ -4,6 +4,9 @@
 
 #define MAX_NAME_SIZE 50
 
+// TODO : faire attention, node 0 et node k pas source et destination !
+// TODO : enlever toute la duplication de code !
+
 Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node) {
     // Penser à free name à la fin du prog. Mettre dans une liste chainée ?
     char *name = (char *) malloc(MAX_NAME_SIZE * sizeof(char));
@@ -85,7 +88,6 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
             }
         }
 
-        // Plante ici
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
             k - 2,
@@ -133,6 +135,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
             }
         }
 
+        // Plante ici -> Toute la formules est fausse, mauvaise intuition
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
             k * size * (size - 1),
