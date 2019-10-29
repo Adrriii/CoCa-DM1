@@ -1,1 +1,10 @@
 .vscode/
+
+parser/
+
+doc/
+
+build/
+doc.html
+
+equalPath
