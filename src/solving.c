@@ -189,9 +189,9 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         size = orderG(graphs[currentGraph]);
-        Z3_ast andFormula[k - 1];
+        Z3_ast andFormula[k];
 
-        for(int i = 0; i < k - 1; i++) {
+        for(int i = 0; i < k; i++) {
             Z3_ast orFormula[sizeG(graphs[currentGraph])];
 
             for (int firstNode = 0; firstNode < size; firstNode++) {
@@ -215,7 +215,7 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
             andFormula[i] = Z3_mk_and(ctx,size,orFormula);
         }
-        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k - 1,andFormula);
+        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k,andFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
