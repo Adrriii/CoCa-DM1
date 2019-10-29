@@ -101,7 +101,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
         int size = orderG(graphs[currentGraph]);
         Z3_ast positionAndFormula[k + 1];
 
-        for (int position = 0; position < k + 1; position++) {
+        for (int position = 0; position <= k; position++) {
             Z3_ast firstNodeAndFormula[size];
 
             for(int firstNode = 0; firstNode < size; firstNode++) {
