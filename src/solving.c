@@ -159,7 +159,6 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
             );
         }
 
-        // Plante ici -> Toute la formules est fausse, mauvaise intuition
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
             numGraphs,
@@ -179,15 +178,19 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
  **/
 static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("Fourth formula !");
-    Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
+    Z3_ast* graphAndFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         int size = orderG(graphs[currentGraph]);
-        Z3_ast* orFormula = (Z3_ast*) malloc(size * k * (k - 1));
+        Z3_ast* nodeAndFormula = (Z3_ast*) malloc(size * sizeof(Z3_ast));
 
-        for (int node = 0; node < orderG(graphs[currentGraph]); node++) {
+        for (int node = 0; node < size; node++) {
+            Z3_ast* positionAndFormula = (Z3_ast*) malloc(k * sizeof(Z3_ast));
+
             for (int i = 0; i < k; i++) {
                 int index = 0;
+                Z3_ast* orFormula = (Z3_ast*) malloc ((k - 1) * sizeof(Z3_ast));
+
                 for (int j = 0; j < k; j++) {
                     if (i == j) {
                         continue;
@@ -198,28 +201,40 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
                         Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, j, k, node))
                     };
 
-                    orFormula[node * size + k * i + j] = Z3_mk_or(
+                    orFormula[index] = Z3_mk_or(
                         ctx,
                         2,
-                        tmpFormula
-                    );
+                        tmpFormula);
 
                     index++;
                 }
+
+                positionAndFormula[i] = Z3_mk_and(
+                    ctx,
+                    k - 1,
+                    orFormula
+                );
             }
+
+            nodeAndFormula[node] = Z3_mk_and(
+                ctx,
+                k,
+                positionAndFormula
+            );
+
         }
 
-        andFormula[currentGraph] = Z3_mk_and(
+        graphAndFormula[currentGraph] = Z3_mk_and(
             ctx,
-            size * k * (k - 1),
-            orFormula
+            numGraphs,
+            nodeAndFormula
         );
     }
 
     return Z3_mk_and(
         ctx,
         numGraphs,
-        andFormula
+        graphAndFormula
     );
 }
 
