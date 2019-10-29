@@ -214,7 +214,7 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
             andFormula[i] = Z3_mk_and(ctx,size,orFormula);
         }
-        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,numGraphs,andFormula);
+        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k - 1,andFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
@@ -263,7 +263,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
     Z3_ast orFormula[kMax];
 
     // De part la simplicité des chemins, il ne peut y avoir k = 0
-    for (int i = 1; i < kMax; kMax++) {
+    for (int i = 1; i < kMax; i++) {
         orFormula[i] = graphsToPathFormula(
             ctx,
             graphs,
