@@ -67,10 +67,10 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
     Z3_ast andFormula[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
-        Z3_ast orFormula[k];
+        Z3_ast orFormula[k + 1];
 
         //TODO Parler dans le rapport de l'opti 1 | k - 1 qui fail ?
-        for (int position = 0; position < k; position++) {
+        for (int position = 0; position <= k; position++) {
             orFormula[position] = getNodeVariable(ctx, currentGraph, position, k, 0);
 
             // node was at 1 on start, why ?
@@ -84,7 +84,7 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
             }
         }
 
-        andFormula[currentGraph] = Z3_mk_and(ctx,k,orFormula);
+        andFormula[currentGraph] = Z3_mk_and(ctx,k + 1,orFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormula);
@@ -99,9 +99,9 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         int size = orderG(graphs[currentGraph]);
-        Z3_ast positionAndFormula[k];
+        Z3_ast positionAndFormula[k + 1];
 
-        for (int position = 0; position < k; position++) {
+        for (int position = 0; position < k + 1; position++) {
             Z3_ast firstNodeAndFormula[size];
 
             for(int firstNode = 0; firstNode < size; firstNode++) {
@@ -128,7 +128,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
             positionAndFormula[position] = Z3_mk_and(ctx,size,firstNodeAndFormula);
         }
 
-        andFormula[currentGraph] = Z3_mk_and(ctx,k,positionAndFormula);
+        andFormula[currentGraph] = Z3_mk_and(ctx,k + 1,positionAndFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormula);
@@ -148,11 +148,11 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         for (int node = 0; node < size; node++) {
             Z3_ast positionAndFormula[k];
 
-            for (int i = 0; i < k; i++) {
+            for (int i = 0; i <= k; i++) {
                 int index = 0;
-                Z3_ast orFormula[k - 1];
+                Z3_ast orFormula[k];
 
-                for (int j = 0; j < k; j++) {
+                for (int j = 0; j <= k; j++) {
                     if (i == j) {
                         continue;
                     }
@@ -166,10 +166,10 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
                     index++;
                 }
 
-                positionAndFormula[i] = Z3_mk_and(ctx,k - 1,orFormula);
+                positionAndFormula[i] = Z3_mk_and(ctx,k,orFormula);
             }
 
-            nodeAndFormula[node] = Z3_mk_and(ctx,k,positionAndFormula);
+            nodeAndFormula[node] = Z3_mk_and(ctx,k + 1,positionAndFormula);
 
         }
 
@@ -187,9 +187,9 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
     Z3_ast andFormulaFinal[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
-        Z3_ast andFormula[k - 1];
+        Z3_ast andFormula[k];
 
-        for(int i = 0; i < k - 1; i++) {
+        for(int i = 0; i < k; i++) {
             int size = orderG(graphs[currentGraph]);
             Z3_ast orFormula[sizeG(graphs[currentGraph])];
 
@@ -214,7 +214,7 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
             andFormula[i] = Z3_mk_and(ctx,size,orFormula);
         }
-        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k - 1,andFormula);
+        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k,andFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
@@ -232,27 +232,27 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
         fifthPartFormula(ctx, graphs, numGraphs, pathLength)
     };
 
-    printf("Testing for k -> %d\n", pathLength);
+    // printf("Testing for k -> %d\n", pathLength);
 
-    for (int i = 0; i < 5; i++) {
-        printf("\tFormule %d -> ", i);
-        Z3_lbool isSat = isFormulaSat(ctx,formulaParts[i]);
+    // for (int i = 0; i < 5; i++) {
+    //     printf("\tFormule %d (%s) -> ", i, Z3_ast_to_string(ctx,formulaParts[i]));
+    //     Z3_lbool isSat = isFormulaSat(ctx,formulaParts[i]);
 
-        switch (isSat)
-        {
-        case Z3_L_FALSE:
-            printf("not satisfiable.\n");
-            break;
+    //     switch (isSat)
+    //     {
+    //     case Z3_L_FALSE:
+    //         printf("not satisfiable.\n");
+    //         break;
 
-        case Z3_L_UNDEF:
-                printf("We don't know.\n");
-            break;
+    //     case Z3_L_UNDEF:
+    //             printf("We don't know.\n");
+    //         break;
 
-        case Z3_L_TRUE:
-                printf("satisfiable.\n");
-                break;
-        }
-    }
+    //     case Z3_L_TRUE:
+    //             printf("satisfiable.\n");
+    //             break;
+    //     }
+    // }
 
     return Z3_mk_and(ctx,5,formulaParts);
 }
