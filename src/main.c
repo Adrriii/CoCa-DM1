@@ -31,7 +31,7 @@ $$$\n\
 }
 
 // TODO : desactivate for return
-bool DEBUG = true;
+bool DEBUG = false;
 
 bool VERBOSE            = false;
 bool FORMULA_DISPLAY    = false;
@@ -50,12 +50,55 @@ void printd(const char* message) {
     }
 }
 
-void debugFormula(Graph* graphs, unsigned numGraphs, int pathLength) {
+void debugFormula(Graph* graphs, unsigned numGraphs) {
     Z3_context ctx = makeContext();
 
     Z3_ast result = graphsToFullFormula(ctx, graphs, numGraphs);
 
-    printf("\n\nResult : \n\n%s\n", Z3_ast_to_string(ctx, result));
+    //printf("\n\nResult : \n\n%s\n", Z3_ast_to_string(ctx, result));
+
+    Z3_lbool isSat = isFormulaSat(ctx,result);
+
+        switch (isSat)
+        {
+        case Z3_L_FALSE:
+            printf("Formula is not satisfiable.\n");
+            break;
+
+        case Z3_L_UNDEF:
+                printf("We don't know if formula is satisfiable.\n");
+            break;
+
+        case Z3_L_TRUE:
+                printf("Formula is satisfiable.\n");
+                break;
+        }
+
+    Z3_del_context(ctx);
+}
+
+void debugFormulaKMAX(Graph* graphs, unsigned numGraphs, int kMax) {
+    Z3_context ctx = makeContext();
+    Z3_ast result;
+
+    for (int k = 1; k < kMax; k++) {
+        result = graphsToPathFormula(ctx, graphs, numGraphs, k);
+        Z3_lbool isSat = isFormulaSat(ctx, result);
+        switch (isSat)
+        {
+        case Z3_L_FALSE:
+            printf("Formula is not satisfiable for k = %d.\n", k);
+            break;
+
+        case Z3_L_UNDEF:
+            printf("We don't know if formula is satisfiable for k = %d.\n", k);
+            break;
+
+        case Z3_L_TRUE:
+            printf("There is a simple valid path of length %d in all graphs\n", k);
+            break;
+        }
+    }
 
     Z3_del_context(ctx);
 }
@@ -178,7 +221,7 @@ int main(int argc, char **argv) {
      *  It's time to debug..
      **/
 
-    debugFormula(graphs, numberGraphs, 4);
+    debugFormulaKMAX(graphs, numberGraphs, 10);
 
 
     // Free graphs
