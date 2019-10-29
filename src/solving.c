@@ -4,6 +4,11 @@
 
 #define MAX_NAME_SIZE 50
 
+extern bool DEBUG;
+
+extern void printd(const char* message);
+
+
 // TODO : faire attention, node 0 et node k pas source et destination !
 // TODO : enlever toute la duplication de code !
 
@@ -39,6 +44,7 @@ static unsigned getTargetNode(Graph graph) {
  * @brief Le chemin de chaque graphe i commence par s_i et finit par t_k.
  **/
 static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    printd("First formula !");
     Z3_ast *formula = (Z3_ast*) malloc (numGraphs * sizeof(Z3_ast));
     
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
@@ -65,6 +71,7 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
  * @brief Chaque position du chemin est occupée par au moins 1 sommet.
  **/
 static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    printd("Second formula !");
     Z3_ast **orFormula = (Z3_ast **) malloc (numGraphs * sizeof (Z3_ast *));
     Z3_ast *andFormula = (Z3_ast *) malloc (numGraphs * sizeof (Z3_ast));
 
@@ -106,6 +113,7 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
  * @brief Chaque position 0 < j < k est occupée par au maximum un sommet.
  **/
 static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    printd("Third formula !");
     Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
@@ -170,6 +178,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
  * @brief Chaque sommet occupe soit une position unique, soit aucune position.
  **/
 static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    printd("Fourth formula !");
     Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
@@ -218,6 +227,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
  * @brief Les sommets occupant les positions forment bien un chemin.
  **/
 static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
+    printd("Fifth formula !");
     Z3_ast* andFormulaFinal = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
 
@@ -274,6 +284,8 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 }
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
+    printd("Welcome in graphsToPathFormula !");
+    
     Z3_ast formulaParts[] = {
         firstPartFormula(ctx, graphs, numGraphs, pathLength),
         secondPartFormula(ctx, graphs, numGraphs, pathLength),
