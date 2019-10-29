@@ -72,22 +72,21 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
  **/
 static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("Second formula !");
-    Z3_ast **orFormula = (Z3_ast **) malloc (numGraphs * sizeof (Z3_ast *));
-    Z3_ast *andFormula = (Z3_ast *) malloc (numGraphs * sizeof (Z3_ast));
+    Z3_ast andFormula[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
-        orFormula[currentGraph] = (Z3_ast*) malloc((k - 2) * sizeof(Z3_ast));
+        Z3_ast orFormula[k - 2];
 
         for (int position = 1; position < k - 1; position++) {
-            orFormula[currentGraph][position - 1] = getNodeVariable(ctx, currentGraph, position, k, 0);
+            orFormula[position - 1] = getNodeVariable(ctx, currentGraph, position, k, 0);
 
             for (int node = 1; node < orderG(graphs[currentGraph]); node++) {
                 Z3_ast tmpFormula[] = {
                     getNodeVariable(ctx, currentGraph, position, k, node),
-                    orFormula[currentGraph][position - 1]
+                    orFormula[position - 1]
                 };
 
-                orFormula[currentGraph][position - 1] = Z3_mk_or(
+                orFormula[position - 1] = Z3_mk_or(
                     ctx,
                     2,
                     tmpFormula
@@ -98,7 +97,7 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
             k - 2,
-            orFormula[currentGraph]
+            orFormula
         );
     }
 
