@@ -110,36 +110,52 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         int size = orderG(graphs[currentGraph]);
-        Z3_ast* orFormula = (Z3_ast*) malloc(k * size * (size - 1));
+        Z3_ast* positionAndFormula = (Z3_ast*) malloc (k * sizeof(Z3_ast));
 
         for (int position = 0; position < k; position++) {
+            Z3_ast* firstNodeAndFormula = (Z3_ast*) malloc (size * sizeof(Z3_ast));
+
             for(int firstNode = 0; firstNode < size; firstNode++) {
                 int index = 0;
+                Z3_ast* orFormula = (Z3_ast*) malloc(size * sizeof(Z3_ast));
 
                 for(int secondNode = 0; secondNode < size; secondNode++) {
                     if (firstNode == secondNode) {
                         continue;
                     }
+
                     Z3_ast tmpFormula[] = {
                         Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, position, k, firstNode)),
                         Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, position, k, secondNode))
                     };
 
-                    orFormula[position * k + firstNode * size + index] = Z3_mk_or(
+                    orFormula[index] = Z3_mk_or(
                         ctx,
                         2,
                         tmpFormula
                     );
                     index ++;
                 }
+
+                firstNodeAndFormula[firstNode] = Z3_mk_and(
+                    ctx,
+                    index,
+                    orFormula
+                );
             }
+
+            positionAndFormula[position] = Z3_mk_and(
+                ctx,
+                size,
+                firstNodeAndFormula
+            );
         }
 
         // Plante ici -> Toute la formules est fausse, mauvaise intuition
         andFormula[currentGraph] = Z3_mk_and(
             ctx,
-            k * size * (size - 1),
-            orFormula
+            numGraphs,
+            positionAndFormula
         );
     }
 
