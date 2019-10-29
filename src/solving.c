@@ -45,7 +45,7 @@ static unsigned getTargetNode(Graph graph) {
  **/
 static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("First formula !");
-    Z3_ast *formula = (Z3_ast*) malloc (numGraphs * sizeof(Z3_ast));
+    Z3_ast formula[numGraphs];
     
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         Z3_ast tmpFormula[] = {
