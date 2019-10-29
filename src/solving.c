@@ -184,37 +184,38 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
  **/
 static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("Fifth formula !");
+    int size;
     Z3_ast andFormulaFinal[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
-        Z3_ast andFormula[k];
+        size = orderG(graphs[currentGraph]);
+        Z3_ast andFormula[k - 1];
 
-        for(int i = 0; i < k; i++) {
-            int size = orderG(graphs[currentGraph]);
+        for(int i = 0; i < k - 1; i++) {
             Z3_ast orFormula[sizeG(graphs[currentGraph])];
-
 
             for (int firstNode = 0; firstNode < size; firstNode++) {
                 Z3_ast orEdgeFormula[sizeG(graphs[currentGraph])];
                 int index = 0;
 
                 for (int secondNode = 0; secondNode < size; secondNode++) {
-                    if (isEdge(graphs[currentGraph], firstNode, secondNode)) {
+                    if (!isEdge(graphs[currentGraph], firstNode, secondNode)) {
                         Z3_ast tmpFormula[] = {
                             Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, i, k, firstNode)),
-                            getNodeVariable(ctx, currentGraph, i + 1, k, secondNode)
+                            Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, i + 1, k, secondNode))
                         };
 
-                        orEdgeFormula[index++] = Z3_mk_or(ctx,2,tmpFormula);
+                        orEdgeFormula[index] = Z3_mk_or(ctx,2,tmpFormula);
+                        index++;
                     }
                 }
 
-                orFormula[firstNode] = Z3_mk_or(ctx,index,orEdgeFormula);
+                orFormula[firstNode] = Z3_mk_and(ctx,index,orEdgeFormula);
             }
 
             andFormula[i] = Z3_mk_and(ctx,size,orFormula);
         }
-        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k,andFormula);
+        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,k - 1,andFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
