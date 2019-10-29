@@ -147,9 +147,13 @@ int main(int argc, char **argv) {
     int opt;
     char *filename = NULL;
 
-    while ((opt = getopt(argc, argv, "hvFsdatfo:")) != -1) {
+    while ((opt = getopt(argc, argv, "DhvFsdatfo:")) != -1) {
         switch (opt)
         {
+        case 'D':
+        printd("Debug enable.");
+            DEBUG = true;
+            break;
         case 'h':
     printd("- h option selected.");
             usage(stdin);
