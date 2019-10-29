@@ -128,7 +128,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
             positionAndFormula[position] = Z3_mk_and(ctx,size,firstNodeAndFormula);
         }
 
-        andFormula[currentGraph] = Z3_mk_and(ctx,numGraphs,positionAndFormula);
+        andFormula[currentGraph] = Z3_mk_and(ctx,k,positionAndFormula);
     }
 
     return Z3_mk_and(ctx,numGraphs,andFormula);
