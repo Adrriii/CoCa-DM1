@@ -14,7 +14,7 @@ extern void printd(const char* message);
 
 Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node) {
     // Penser à free name à la fin du prog. Mettre dans une liste chainée ?
-    char *name = (char *) malloc(MAX_NAME_SIZE * sizeof(char));
+    char name[MAX_NAME_SIZE];
     snprintf(name, MAX_NAME_SIZE, "x(%d, %d, %d, %d)", number, position, k, node);
 
     return mk_bool_var(ctx, name);
@@ -249,11 +249,11 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
         Z3_ast* andFormula = (Z3_ast*) malloc(k - 1);
         for(int i = 0; i < k - 1; i++) {
             int size = orderG(graphs[currentGraph]);
-            Z3_ast* orFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * size);
+            Z3_ast* orFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * sizeof(Z3_ast));
 
 
             for (int firstNode = 0; firstNode < size; firstNode++) {
-                Z3_ast* orEdgeFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]));
+                Z3_ast* orEdgeFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * sizeof(Z3_ast));
                 int index = 0;
 
                 for (int secondNode = 0; secondNode < size; secondNode++) {
