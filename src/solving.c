@@ -242,17 +242,18 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
  **/
 static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("Fifth formula !");
-    Z3_ast* andFormulaFinal = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
-    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+    Z3_ast andFormulaFinal[numGraphs];
 
-        Z3_ast* andFormula = (Z3_ast*) malloc(k - 1);
+    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+        Z3_ast andFormula[k - 1];
+
         for(int i = 0; i < k - 1; i++) {
             int size = orderG(graphs[currentGraph]);
-            Z3_ast* orFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * sizeof(Z3_ast));
+            Z3_ast orFormula[sizeG(graphs[currentGraph])];
 
 
             for (int firstNode = 0; firstNode < size; firstNode++) {
-                Z3_ast* orEdgeFormula = (Z3_ast*) malloc(sizeG(graphs[currentGraph]) * sizeof(Z3_ast));
+                Z3_ast orEdgeFormula[sizeG(graphs[currentGraph])];
                 int index = 0;
 
                 for (int secondNode = 0; secondNode < size; secondNode++) {
