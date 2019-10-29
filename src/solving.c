@@ -53,18 +53,10 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
             getNodeVariable(ctx, currentGraph, k, k, getTargetNode(graphs[currentGraph]))
         };
 
-        formula[currentGraph] = Z3_mk_and(
-            ctx,
-            2,
-            tmpFormula
-        ); 
+        formula[currentGraph] = Z3_mk_and(ctx,2,tmpFormula); 
     }
 
-    return Z3_mk_and(
-        ctx,
-        numGraphs,
-        formula
-    );
+    return Z3_mk_and(ctx,numGraphs,formula);
 }
 
 /**
@@ -75,37 +67,27 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
     Z3_ast andFormula[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
-        Z3_ast orFormula[k - 2];
+        Z3_ast orFormula[k];
 
-        for (int position = 1; position < k - 1; position++) {
-            orFormula[position - 1] = getNodeVariable(ctx, currentGraph, position, k, 0);
+        //TODO Parler dans le rapport de l'opti 1 | k - 1 qui fail ?
+        for (int position = 0; position < k; position++) {
+            orFormula[position] = getNodeVariable(ctx, currentGraph, position, k, 0);
 
-            for (int node = 1; node < orderG(graphs[currentGraph]); node++) {
+            // node was at 1 on start, why ?
+            for (int node = 0; node < orderG(graphs[currentGraph]); node++) {
                 Z3_ast tmpFormula[] = {
                     getNodeVariable(ctx, currentGraph, position, k, node),
-                    orFormula[position - 1]
+                    orFormula[position]
                 };
 
-                orFormula[position - 1] = Z3_mk_or(
-                    ctx,
-                    2,
-                    tmpFormula
-                );
+                orFormula[position] = Z3_mk_or(ctx,2,tmpFormula);
             }
         }
 
-        andFormula[currentGraph] = Z3_mk_and(
-            ctx,
-            k - 2,
-            orFormula
-        );
+        andFormula[currentGraph] = Z3_mk_and(ctx,k,orFormula);
     }
 
-    return Z3_mk_and(
-        ctx,
-        numGraphs,
-        andFormula
-    );
+    return Z3_mk_and(ctx,numGraphs,andFormula);
 }
 
 /**
@@ -136,40 +118,20 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
                         Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, position, k, secondNode))
                     };
 
-                    orFormula[index] = Z3_mk_or(
-                        ctx,
-                        2,
-                        tmpFormula
-                    );
+                    orFormula[index] = Z3_mk_or(ctx,2,tmpFormula);
                     index ++;
                 }
 
-                firstNodeAndFormula[firstNode] = Z3_mk_and(
-                    ctx,
-                    index,
-                    orFormula
-                );
+                firstNodeAndFormula[firstNode] = Z3_mk_and(ctx,index,orFormula);
             }
 
-            positionAndFormula[position] = Z3_mk_and(
-                ctx,
-                size,
-                firstNodeAndFormula
-            );
+            positionAndFormula[position] = Z3_mk_and(ctx,size,firstNodeAndFormula);
         }
 
-        andFormula[currentGraph] = Z3_mk_and(
-            ctx,
-            numGraphs,
-            positionAndFormula
-        );
+        andFormula[currentGraph] = Z3_mk_and(ctx,numGraphs,positionAndFormula);
     }
 
-    return Z3_mk_and(
-        ctx,
-        numGraphs,
-        andFormula
-    );
+    return Z3_mk_and(ctx,numGraphs,andFormula);
 }
 
 /**
@@ -200,41 +162,21 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
                         Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, j, k, node))
                     };
 
-                    orFormula[index] = Z3_mk_or(
-                        ctx,
-                        2,
-                        tmpFormula);
-
+                    orFormula[index] = Z3_mk_or(ctx,2,tmpFormula);
                     index++;
                 }
 
-                positionAndFormula[i] = Z3_mk_and(
-                    ctx,
-                    k - 1,
-                    orFormula
-                );
+                positionAndFormula[i] = Z3_mk_and(ctx,k - 1,orFormula);
             }
 
-            nodeAndFormula[node] = Z3_mk_and(
-                ctx,
-                k,
-                positionAndFormula
-            );
+            nodeAndFormula[node] = Z3_mk_and(ctx,k,positionAndFormula);
 
         }
 
-        graphAndFormula[currentGraph] = Z3_mk_and(
-            ctx,
-            numGraphs,
-            nodeAndFormula
-        );
+        graphAndFormula[currentGraph] = Z3_mk_and(ctx,numGraphs,nodeAndFormula);
     }
 
-    return Z3_mk_and(
-        ctx,
-        numGraphs,
-        graphAndFormula
-    );
+    return Z3_mk_and(ctx,numGraphs,graphAndFormula);
 }
 
 /**
@@ -263,40 +205,21 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
                             getNodeVariable(ctx, currentGraph, i + 1, k, secondNode)
                         };
 
-                        orEdgeFormula[index++] = Z3_mk_or(
-                            ctx,
-                            2,
-                            tmpFormula
-                        );
+                        orEdgeFormula[index++] = Z3_mk_or(ctx,2,tmpFormula);
                     }
                 }
 
-                orFormula[firstNode] = Z3_mk_or(
-                    ctx,
-                    index,
-                    orEdgeFormula
-                );
+                orFormula[firstNode] = Z3_mk_or(ctx,index,orEdgeFormula);
             }
 
-            andFormula[i] = Z3_mk_and(
-                ctx,
-                size,
-                orFormula
-            );
+            andFormula[i] = Z3_mk_and(ctx,size,orFormula);
         }
-        andFormulaFinal[currentGraph] = Z3_mk_and(
-            ctx,
-            numGraphs,
-            andFormula
-        );
+        andFormulaFinal[currentGraph] = Z3_mk_and(ctx,numGraphs,andFormula);
     }
 
-    return Z3_mk_and(
-        ctx,
-        numGraphs,
-        andFormulaFinal
-    );
+    return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
 }
+
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
     printd("Welcome in graphsToPathFormula !");
@@ -309,9 +232,45 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
         fifthPartFormula(ctx, graphs, numGraphs, pathLength)
     };
 
-    return Z3_mk_and(
-        ctx,
-        5,
-        formulaParts
-    );
+    return Z3_mk_and(ctx,5,formulaParts);
+}
+
+/**
+ * @brief Find the value for k_max
+ * 
+ * @param graphs array of graphs to compute with
+ * @param numGraphs size of graphs array
+ * @return int the value of k_max
+ */
+static int kMaxValue(Graph* graphs, unsigned numGraphs) {
+    if (numGraphs == 0) return -1;
+
+    int minSize = orderG(graphs[0]);
+    int tmpSize;
+    
+    for (int i = 1; i < numGraphs; i++) {
+        if ((tmpSize = orderG(graphs[i])) < minSize) {
+            minSize = tmpSize;
+        }
+    }
+
+    return minSize - 1;
+}
+
+Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs) {
+    int kMax = kMaxValue(graphs, numGraphs);
+
+    Z3_ast orFormula[kMax];
+
+    // De part la simplicité des chemins, il ne peut y avoir k = 0
+    for (int i = 1; i < kMax; kMax++) {
+        orFormula[i] = graphsToPathFormula(
+            ctx,
+            graphs,
+            numGraphs,
+            i
+        );
+    }
+
+    return Z3_mk_or(ctx, kMax, orFormula);
 }

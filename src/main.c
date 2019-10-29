@@ -53,7 +53,7 @@ void printd(const char* message) {
 void debugFormula(Graph* graphs, unsigned numGraphs, int pathLength) {
     Z3_context ctx = makeContext();
 
-    Z3_ast result = graphsToPathFormula(ctx, graphs, numGraphs, pathLength);
+    Z3_ast result = graphsToFullFormula(ctx, graphs, numGraphs);
 
     printf("\n\nResult : \n\n%s\n", Z3_ast_to_string(ctx, result));
 
