@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
      *  It's time to debug..
      **/
 
-    debugFormulaKMAX(graphs, numberGraphs, 10);
+    debugFormulaKMAX(graphs, numberGraphs, 6);
 
 
     // Free graphs

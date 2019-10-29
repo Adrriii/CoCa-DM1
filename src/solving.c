@@ -232,6 +232,28 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
         fifthPartFormula(ctx, graphs, numGraphs, pathLength)
     };
 
+    printf("Testing for k -> %d\n", pathLength);
+
+    for (int i = 0; i < 5; i++) {
+        printf("\tFormule %d -> ", i);
+        Z3_lbool isSat = isFormulaSat(ctx,formulaParts[i]);
+
+        switch (isSat)
+        {
+        case Z3_L_FALSE:
+            printf("not satisfiable.\n");
+            break;
+
+        case Z3_L_UNDEF:
+                printf("We don't know.\n");
+            break;
+
+        case Z3_L_TRUE:
+                printf("satisfiable.\n");
+                break;
+        }
+    }
+
     return Z3_mk_and(ctx,5,formulaParts);
 }
 
