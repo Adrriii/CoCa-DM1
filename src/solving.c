@@ -113,18 +113,18 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
  **/
 static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("Third formula !");
-    Z3_ast* andFormula = (Z3_ast *) malloc(numGraphs * sizeof(Z3_ast));
+    Z3_ast andFormula[numGraphs];
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         int size = orderG(graphs[currentGraph]);
-        Z3_ast* positionAndFormula = (Z3_ast*) malloc (k * sizeof(Z3_ast));
+        Z3_ast positionAndFormula[k];
 
         for (int position = 0; position < k; position++) {
-            Z3_ast* firstNodeAndFormula = (Z3_ast*) malloc (size * sizeof(Z3_ast));
+            Z3_ast firstNodeAndFormula[size];
 
             for(int firstNode = 0; firstNode < size; firstNode++) {
                 int index = 0;
-                Z3_ast* orFormula = (Z3_ast*) malloc(size * sizeof(Z3_ast));
+                Z3_ast orFormula[size];
 
                 for(int secondNode = 0; secondNode < size; secondNode++) {
                     if (firstNode == secondNode) {
