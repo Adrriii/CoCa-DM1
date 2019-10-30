@@ -117,6 +117,11 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
             if (FORMULA_DISPLAY) {
                 printf("%s\n", Z3_ast_to_string(ctx, result));
             }
+
+            if (DISPLAY_FULL_PATH) {
+                printf("DEBG\n");
+                printPathFromModel(ctx, getModelFromSatFormula, graphs, numGraphs, k);
+            }
             break;
         }
     }
