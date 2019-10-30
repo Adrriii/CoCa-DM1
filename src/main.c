@@ -94,7 +94,7 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
     bool keepSearching = true;
 
-    for (int k = 1; k < kMax && keepSearching; k++) {
+    for (int k = 1; k <= kMax && keepSearching; k++) {
         result = graphsToPathFormula(ctx, graphs, numGraphs, k);
         Z3_lbool isSat = isFormulaSat(ctx, result);
         switch (isSat)
