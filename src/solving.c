@@ -381,7 +381,7 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
                 fprintf(graph, "_%d_%s [initial=1,color=green][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
                 continue;
             }
-            
+
             if (isTarget(graphs[i], node)) {
                 fprintf(graph, "_%d_%s [final=1,color=red][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
                 continue;
@@ -401,9 +401,30 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             } else {
                 fprintf(graph, "_%d_%s ;\n", i, name);
             }
-            
-            
         }
+
+        for (int firstNode = 0; firstNode < orderG(graphs[i]); firstNode++) {
+            for (int secondNode = 0; secondNode < orderG(graphs[i]); secondNode++) {
+                if (isEdge(graphs[i], firstNode, secondNode)) {
+                    value = false;
+                    for (int pos = 0; pos <= pathLength; pos++) {
+                        Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, secondNode);
+                        if (valueOfVarInModel(ctx,model,currentVar)) {
+                            value = true;
+                            break;
+                        }
+                    }
+
+                    if (value) {
+                        fprintf(graph, "_%d_%s -> _%d_%s [color=blue];\n", i, getNodeName(graphs[i], firstNode), i, getNodeName(graphs[i], secondNode));
+                    } else {
+                        fprintf(graph, "_%d_%s -> _%d_%s ;\n", i, getNodeName(graphs[i], firstNode), i, getNodeName(graphs[i], secondNode));
+
+                    }
+                }
+            }
+        }
+
     }
 
     fprintf(graph, "}\n");
