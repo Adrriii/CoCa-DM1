@@ -149,7 +149,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
 
             for (int i = 0; i <= k; i++) {
                 int index = 0;
-                Z3_ast orFormula[k];
+                Z3_ast orFormula[k + 1];
 
                 for (int j = 0; j <= k; j++) {
                     if (i == j) {
@@ -188,7 +188,7 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         size = orderG(graphs[currentGraph]);
-        Z3_ast andFormula[k];
+        Z3_ast andFormula[k + 1];
 
         for(int i = 0; i <= k; i++) {
             Z3_ast orFormula[sizeG(graphs[currentGraph])];
