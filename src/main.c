@@ -40,7 +40,7 @@ bool FORMULA_DISPLAY    = false;
 bool BY_DEPTH           = false;
 bool DISPLAY_FULL_PATH  = false;
 bool WRITE_DOT          = false;
-
+bool STOP_AT_FIRST      = true;
 
 /**
  * @brief Print message if DEBUG flag is set.
@@ -87,13 +87,14 @@ void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
 
 void findByDepth(Graph* graphs, unsigned numGraphs) {
     if (VERBOSE) displayAllGraphs(graphs, numGraphs);
-    
+
     Z3_context ctx = makeContext();
     Z3_ast result;
 
     int kMax = kMaxValue(graphs, numGraphs);
+    bool keepSearching = true;
 
-    for (int k = 1; k < kMax; k++) {
+    for (int k = 1; k < kMax && keepSearching; k++) {
         result = graphsToPathFormula(ctx, graphs, numGraphs, k);
         Z3_lbool isSat = isFormulaSat(ctx, result);
         switch (isSat)
@@ -108,6 +109,10 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
 
         case Z3_L_TRUE:
             printf("There is a simple valid path of length %d in all graphs\n", k);
+
+            if (STOP_AT_FIRST) {
+                keepSearching = false;
+            }
             break;
         }
     }
@@ -204,6 +209,8 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "-a require -s to be present (if present put it before).\n");
                 exit(EXIT_FAILURE);
             }
+
+            STOP_AT_FIRST = false;
             break;
 
         case 't':
@@ -236,8 +243,8 @@ int main(int argc, char **argv) {
     /**
      *  It's time to debug..
      **/
-
-    findByDepth(graphs, numberGraphs);
+    if (BY_DEPTH)
+        findByDepth(graphs, numberGraphs);
 
 
     // Free graphs
