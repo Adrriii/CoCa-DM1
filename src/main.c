@@ -52,12 +52,27 @@ void printd(const char* message) {
     }
 }
 
-void debugFormula(Graph* graphs, unsigned numGraphs) {
-    Z3_context ctx = makeContext();
+void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
+    for (int i = 0; i < numGraphs; i++) {
+        printGraph(graphs[i]);
+    }
+}
 
+/**
+ * @brief Decision problem
+ * 
+ * @param graphs array of graphs
+ * @param numGraphs number of graph in graphs
+ * @return true if there is a path 
+ * @return false else
+ */
+bool fullFormula(Graph* graphs, unsigned numGraphs) {
+    if (VERBOSE) displayAllGraphs(graphs, numGraphs);
+
+    Z3_context ctx = makeContext();
     Z3_ast result = graphsToFullFormula(ctx, graphs, numGraphs);
 
-    //printf("\n\nResult : \n\n%s\n", Z3_ast_to_string(ctx, result));
+    bool decision = false;
 
     Z3_lbool isSat = isFormulaSat(ctx,result);
 
@@ -68,22 +83,28 @@ void debugFormula(Graph* graphs, unsigned numGraphs) {
             break;
 
         case Z3_L_UNDEF:
-                printf("We don't know if formula is satisfiable.\n");
+            printf("We don't know if formula is satisfiable.\n");
             break;
 
         case Z3_L_TRUE:
-                printf("Formula is satisfiable.\n");
-                break;
+            printf("Formula is satisfiable.\n");
+            decision = true;
+            if (FORMULA_DISPLAY) {
+                printf("%s\n", Z3_ast_to_string(ctx, result));
+            }
+
+            //if (DISPLAY_FULL_PATH) {
+            //    printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
+            //}
+            break;
         }
 
     Z3_del_context(ctx);
+
+    return decision;
 }
 
-void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
-    for (int i = 0; i < numGraphs; i++) {
-        printGraph(graphs[i]);
-    }
-}
+
 
 void findByDepth(Graph* graphs, unsigned numGraphs) {
     if (VERBOSE) displayAllGraphs(graphs, numGraphs);
@@ -247,13 +268,10 @@ int main(int argc, char **argv) {
     Graph* graphs = loadGraphs(argc, argv, optind);
     int numberGraphs = argc - optind;
 
-
-    /**
-     *  It's time to debug..
-     **/
     if (BY_DEPTH)
         findByDepth(graphs, numberGraphs);
-
+    else
+        fullFormula(graphs, numberGraphs);
 
     // Free graphs
     for (int i = 0; i < numberGraphs; i++) {
