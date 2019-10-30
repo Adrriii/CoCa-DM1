@@ -87,15 +87,16 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
             break;
 
         case Z3_L_TRUE:
-            printf("Formula is satisfiable.\n");
+            int nb = getSolutionLengthFromModel(ctx, getModelFromSatFormula(ctx, result), graphs);
+            printf("There is a simple valid path of length %d in all graphs\n", nb);
+
             decision = true;
             if (FORMULA_DISPLAY) {
                 printf("%s\n", Z3_ast_to_string(ctx, result));
             }
-
-            //if (DISPLAY_FULL_PATH) {
-            //    printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
-            //}
+            if (DISPLAY_FULL_PATH) {
+                printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, nb);
+            }
             break;
         }
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define MAX_NAME_SIZE 50
 
@@ -297,4 +298,72 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
             }
         }
     }
+}
+
+bool isPositionOccuped(int graph, int position, int pathLength, const char* baseString) {
+    char string[strlen(baseString)];
+    strncpy(string, baseString, strlen(baseString));
+
+    char delim[] = "\n";
+
+    char *ptr = strtok(string, delim);
+
+    while(ptr) {
+        int i, pos, k, node;
+        char value[5];
+        sscanf(ptr, "x(%d, %d, %d, %d) -> %s", &i, &pos, &k, &node, value);
+
+        if (i == graph && pos == position && k == pathLength && (strcmp(value, "true") == 0)) {
+            return true;
+        }
+
+        ptr = strtok(NULL, delim);
+    }
+
+    return false;
+}
+
+
+int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
+    int nbGraphs = -1;
+
+    const char* baseString = Z3_model_to_string(ctx, model); 
+    char string[strlen(baseString)];
+
+    strncpy(string, baseString, strlen(baseString));
+
+    char delim[] = "\n";
+
+    char *ptr = strtok(string, delim);
+
+    while(ptr) {
+        int i, position, k, node;
+        char value[5];
+        sscanf(ptr, "x(%d, %d, %d, %d) -> %s", &i, &position, &k, &node, value);
+
+        if (i > nbGraphs) nbGraphs = i;
+        ptr = strtok(NULL, delim);
+    }
+
+    int kMax = kMaxValue(graphs, nbGraphs + 1);
+
+    for (int k = 0; k <= kMax; k++) {
+        bool found = true;
+        for (int i = 0; i <= nbGraphs; i++) {
+            for (int position = 0; position <= k; position++) {
+                if (!isPositionOccuped(i, position, k, baseString)) {
+                    found = false;  
+                    break;
+                }
+            }
+
+            if (!found) break;
+        }
+
+        if (found) {
+            return k;
+        }
+    }
+
+    return -1;
 }
