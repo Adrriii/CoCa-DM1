@@ -276,3 +276,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
 
     return Z3_mk_or(ctx, kMax - 1, orFormula);
 }
+
+// void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength) {
+
+// }
