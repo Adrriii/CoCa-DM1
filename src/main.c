@@ -79,7 +79,15 @@ void debugFormula(Graph* graphs, unsigned numGraphs) {
     Z3_del_context(ctx);
 }
 
+void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
+    for (int i = 0; i < numGraphs; i++) {
+        printGraph(graphs[i]);
+    }
+}
+
 void findByDepth(Graph* graphs, unsigned numGraphs) {
+    if (VERBOSE) displayAllGraphs(graphs, numGraphs);
+    
     Z3_context ctx = makeContext();
     Z3_ast result;
 
