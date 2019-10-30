@@ -113,6 +113,10 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
             if (STOP_AT_FIRST) {
                 keepSearching = false;
             }
+
+            if (FORMULA_DISPLAY) {
+                printf("%s\n", Z3_ast_to_string(ctx, result));
+            }
             break;
         }
     }
