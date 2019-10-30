@@ -146,7 +146,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         Z3_ast nodeAndFormula[size];
 
         for (int node = 0; node < size; node++) {
-            Z3_ast positionAndFormula[k];
+            Z3_ast positionAndFormula[k + 1];
 
             for (int i = 0; i <= k; i++) {
                 int index = 0;
@@ -166,7 +166,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
                     index++;
                 }
 
-                positionAndFormula[i] = Z3_mk_and(ctx,k,orFormula);
+                positionAndFormula[i] = Z3_mk_and(ctx, index, orFormula);
             }
 
             nodeAndFormula[node] = Z3_mk_and(ctx,k + 1,positionAndFormula);
