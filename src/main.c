@@ -119,8 +119,7 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
             }
 
             if (DISPLAY_FULL_PATH) {
-                printf("DEBG\n");
-                printPathFromModel(ctx, getModelFromSatFormula, graphs, numGraphs, k);
+                printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
             }
             break;
         }

@@ -285,9 +285,9 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
         size = orderG(graphs[i]);
         printf("Path in graph %d\n", i);
         
-        for (int node = 0; node < size; node++) {
+        for (int pos = 0; pos <= pathLength; pos++) {
+            for (int node = 0; node < size; node++) {
 
-            for (int pos = 0; pos <= pathLength; pos++) {
                 Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, node);
                 value = valueOfVarInModel(ctx,model,currentVar);
 
