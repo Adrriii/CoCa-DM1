@@ -7,6 +7,8 @@
 
 #include "Solving.h"
 
+extern int kMaxValue(Graph* graphs, unsigned numGraphs);
+
 /**
  * Remove ?
  **/ 
@@ -77,9 +79,11 @@ void debugFormula(Graph* graphs, unsigned numGraphs) {
     Z3_del_context(ctx);
 }
 
-void debugFormulaKMAX(Graph* graphs, unsigned numGraphs, int kMax) {
+void findByDepth(Graph* graphs, unsigned numGraphs) {
     Z3_context ctx = makeContext();
     Z3_ast result;
+
+    int kMax = kMaxValue(graphs, numGraphs);
 
     for (int k = 1; k < kMax; k++) {
         result = graphsToPathFormula(ctx, graphs, numGraphs, k);
@@ -225,7 +229,7 @@ int main(int argc, char **argv) {
      *  It's time to debug..
      **/
 
-    debugFormulaKMAX(graphs, numberGraphs, 11);
+    findByDepth(graphs, numberGraphs);
 
 
     // Free graphs
