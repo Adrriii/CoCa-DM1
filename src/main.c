@@ -143,6 +143,13 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
             if (DISPLAY_FULL_PATH) {
                 printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
             }
+
+            if(WRITE_DOT) {
+                char name[50];
+                snprintf(name, 50, "result-l%d.dot", k);
+                printf("WRITE\n");
+                createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, k, name);
+            }
             break;
         }
     }

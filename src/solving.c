@@ -367,3 +367,46 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
 
     return -1;
 }
+
+void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength, char* name) {
+    int value;
+
+    FILE* graph = fopen(name, "w");
+    fprintf(graph, "diagraph %s{\n", name);
+
+    for (int i = 0; i < numGraph; i++) {
+        for (int node = 0; node < orderG(graphs[i]); node++) {
+
+            if (isSource(graphs[i], node)) {
+                fprintf(graph, "_%d_%s [initial=1,color=green][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
+                continue;
+            }
+            
+            if (isTarget(graphs[i], node)) {
+                fprintf(graph, "_%d_%s [final=1,color=red][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
+                continue;
+            }
+            value = false;
+            for (int pos = 0; pos <= pathLength; pos++) {
+                Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, node);
+                if (valueOfVarInModel(ctx,model,currentVar)) {
+                    value = true;
+                    break;
+                }
+            }
+
+            if (value) {
+                printf("Value true !\n");
+                fprintf(graph, "_%d_%s [style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
+            } else {
+                fprintf(graph, "_%d_%s ;\n", i, name);
+            }
+            
+            
+        }
+    }
+
+    fprintf(graph, "}\n");
+
+    fclose(graph);
+}
