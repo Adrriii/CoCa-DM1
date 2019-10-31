@@ -53,6 +53,12 @@ void printd(const char* message) {
     }
 }
 
+/**
+ * @brief Display all graphs
+ * 
+ * @param graphs graphs to display
+ * @param numGraphs number of graph to display
+ */
 void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
     for (int i = 0; i < numGraphs; i++) {
         printGraph(graphs[i]);
@@ -60,12 +66,12 @@ void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
 }
 
 /**
- * @brief Decision problem
+ * @brief Decision problem for Distance Commune
  * 
  * @param graphs array of graphs
  * @param numGraphs number of graph in graphs
  * @return true if there is a path 
- * @return false else
+ * @return false if not
  */
 bool fullFormula(Graph* graphs, unsigned numGraphs) {
     if (VERBOSE) displayAllGraphs(graphs, numGraphs);
@@ -108,6 +114,12 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
 
 
 
+/**
+ * @brief Find all path length for distance commune problem
+ * 
+ * @param graphs array of graphs
+ * @param numGraphs size of the array
+ */
 void findByDepth(Graph* graphs, unsigned numGraphs) {
     if (VERBOSE) displayAllGraphs(graphs, numGraphs);
 
@@ -162,6 +174,14 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
     Z3_del_context(ctx);
 }
 
+/**
+ * @brief Load all graphs given in program arguments
+ * 
+ * @param argc number of arguments
+ * @param argv array of arguments
+ * @param optind index of name arguments in argv
+ * @return Graph* the array filled with loaded graphs
+ */
 Graph* loadGraphs(int argc, char**argv, int optind) {
     Graph* graphs = (Graph *) malloc((argc - optind) * sizeof(Graph));
 
