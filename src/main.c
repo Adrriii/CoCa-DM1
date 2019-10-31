@@ -129,9 +129,22 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
             if (FORMULA_DISPLAY) {
                 printf("%s\n", Z3_ast_to_string(ctx, result));
             }
+
             if (DISPLAY_FULL_PATH) {
                 printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, nb);
             }
+
+            if(WRITE_DOT) {
+                char name[50];
+                if (!filename) {
+                    snprintf(name, 50, "result-l%d", nb);
+                } else {
+                    snprintf(name, 50, "%s-l%d", filename, nb);
+                }
+
+                createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, nb, name);
+            }
+
             break;
         }
 
