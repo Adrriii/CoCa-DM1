@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define MAX_NAME_SIZE 50
-
+#define DOT_DIRECTORY "sol/"
 extern bool DEBUG;
 
 extern void printd(const char* message);
@@ -315,6 +315,18 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
 }
 
 
+/**
+ * @brief Looking in model if a position in a graph is occuped
+ * 
+ * @param ctx Z3 context
+ * @param graphs array of graphs
+ * @param graphIndex index of current graph
+ * @param position position to check in model
+ * @param k value of current path length
+ * @param model Z3 model
+ * @return true if a node is at the given position
+ * @return false if not
+ */
 static bool isPositionOccuped(Z3_context ctx, Graph *graphs, int graphIndex, int position, int k, Z3_model model) {
     int size = orderG(graphs[graphIndex]);
 
@@ -337,11 +349,10 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
     char string[strlen(baseString)];
 
     strncpy(string, baseString, strlen(baseString));
-
     char delim[] = "\n";
-
     char *ptr = strtok(string, delim);
 
+    // Looking in the model for size of graphs. Needed for kMaxValue
     while(ptr) {
         int i, position, k, node;
         char value[5];
@@ -355,9 +366,10 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
 
     for (int k = 0; k <= kMax; k++) {
         bool found = true;
+
         for (int i = 0; i <= nbGraphs; i++) {
             for (int position = 0; position <= k; position++) {
-                        if (!isPositionOccuped(ctx, graphs, i, position, k, model)) {
+                if (!isPositionOccuped(ctx, graphs, i, position, k, model)) {
                     found = false;
                     break;
                 }
@@ -371,6 +383,7 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
         }
     }
 
+    // Error ?
     return -1;
 }
 
@@ -378,8 +391,20 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
 void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength, char* name) {
     int value;
 
-    FILE* graph = fopen(name, "w");
-    fprintf(graph, "diagraph %s{\n", name);
+    char realName[100];
+
+    snprintf(realName, 100, "%s%s.dot", DOT_DIRECTORY, name);
+
+    system("mkdir "DOT_DIRECTORY" 2> /dev/null"); // Hide error when sol/ already exists
+    FILE* graph = fopen(realName, "w");
+    
+
+    sscanf(name, "%s.dot", name);
+    for (int i = 0; i < strlen(name); i++) {
+        if (name[i] == '-') name[i] = '_';
+    }
+
+    fprintf(graph, "digraph %s{\n", name);
 
     for (int i = 0; i < numGraph; i++) {
         for (int node = 0; node < orderG(graphs[i]); node++) {
@@ -405,7 +430,7 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             if (value) {
                 fprintf(graph, "_%d_%s [style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
             } else {
-                fprintf(graph, "_%d_%s ;\n", i, name);
+                fprintf(graph, "_%d_%s ;\n", i, getNodeName(graphs[i], node));
             }
         }
 
@@ -413,11 +438,15 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             for (int secondNode = 0; secondNode < orderG(graphs[i]); secondNode++) {
                 if (isEdge(graphs[i], firstNode, secondNode)) {
                     value = false;
-                    for (int pos = 0; pos <= pathLength; pos++) {
-                        Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, secondNode);
-                        if (valueOfVarInModel(ctx,model,currentVar)) {
-                            value = true;
-                            break;
+
+                    // Don't take the return
+                    if (!(isSource(graphs[i], secondNode) && isTarget(graphs[i], firstNode))) {
+                        for (int pos = 0; pos <= pathLength; pos++) {
+                            if (valueOfVarInModel(ctx, model, getNodeVariable(ctx, i, pos, pathLength, firstNode))) {
+                                if (valueOfVarInModel(ctx,model,getNodeVariable(ctx, i, pos + 1, pathLength, secondNode))) {
+                                    value = true;
+                                }
+                            }
                         }
                     }
 

@@ -163,8 +163,7 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
 
             if(WRITE_DOT) {
                 char name[50];
-                snprintf(name, 50, "result-l%d.dot", k);
-                printf("WRITE\n");
+                snprintf(name, 50, "result-l%d", k);
                 createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, k, name);
             }
             break;
