@@ -11,20 +11,22 @@ extern bool DEBUG;
 extern void printd(const char* message);
 
 
-// TODO : faire attention, node 0 et node k pas source et destination !
 // TODO : enlever toute la duplication de code !
 
 Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node) {
-    // Penser à free name à la fin du prog. Mettre dans une liste chainée ?
     char name[MAX_NAME_SIZE];
     snprintf(name, MAX_NAME_SIZE, "x(%d, %d, %d, %d)", number, position, k, node);
 
     return mk_bool_var(ctx, name);
 }
 
+
 /**
- * @brief return the index of the graph's source node. 
- **/
+ * @brief Get the Source Node object
+ * 
+ * @param graph graph in wich looking for source node
+ * @return unsigned the index of the source node
+ */
 static unsigned getSourceNode(Graph graph) {
     int node;
     for (node = 0; node < orderG(graph) && !isSource(graph, node); node++);
@@ -32,15 +34,20 @@ static unsigned getSourceNode(Graph graph) {
     return node;
 }
 
+
 /**
- * @brief return the index of the graph's target node. 
- **/
+ * @brief Get the Target Node object
+ * 
+ * @param graph graph in wich looking for target node
+ * @return unsigned the index of the target node
+ */
 static unsigned getTargetNode(Graph graph) {
     int node;
     for (node = 0; node < orderG(graph) && !isTarget(graph, node); node++);
 
     return node;
 }
+
 
 /**
  * @brief Le chemin de chaque graphe i commence par s_i et finit par t_k.
@@ -61,6 +68,7 @@ static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
     // Return graph big and formula
     return Z3_mk_and(ctx,numGraphs,sourceTargetAndFormula);
 }
+
 
 /**
  * @brief Chaque position du chemin est occupée par au moins 1 sommet.
@@ -90,6 +98,7 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
     // Return graph big and formula
     return Z3_mk_and(ctx,numGraphs,andFormula);
 }
+
 
 /**
  * @brief Chaque position 0 < j < k est occupée par au maximum un sommet.
@@ -135,6 +144,7 @@ static Z3_ast thirdPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
     return Z3_mk_and(ctx,numGraphs,andFormula);
 }
 
+
 /**
  * @brief Chaque sommet occupe soit une position unique, soit aucune position.
  **/
@@ -179,6 +189,7 @@ static Z3_ast fourthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
 
     return Z3_mk_and(ctx,numGraphs,graphAndFormula);
 }
+
 
 /**
  * @brief Les sommets occupant les positions forment bien un chemin.
@@ -239,6 +250,7 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
     return Z3_mk_and(ctx,5,formulaParts);
 }
 
+
 /**
  * @brief Find the value for k_max
  * 
@@ -261,6 +273,7 @@ int kMaxValue(Graph* graphs, unsigned numGraphs) {
     return minSize - 1;
 }
 
+
 Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
 
@@ -278,6 +291,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
 
     return Z3_mk_or(ctx, kMax - 1, orFormula);
 }
+
 
 void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength) {
     int size, value;
@@ -300,7 +314,19 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
     }
 }
 
-bool isPositionOccuped(int graph, int position, int pathLength, const char* baseString) {
+
+//TODO refaire totalement cette fonction ! utiliser le model, pas baseString
+/**
+ * @brief aux function for getSolutionLengthFromModel, to know of there is a node in given position for k
+ * 
+ * @param graph 
+ * @param position 
+ * @param pathLength 
+ * @param baseString 
+ * @return true 
+ * @return false 
+ */
+static bool isPositionOccuped(int graph, int position, int pathLength, const char* baseString) {
     char string[strlen(baseString)];
     strncpy(string, baseString, strlen(baseString));
 
@@ -368,6 +394,7 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
     return -1;
 }
 
+
 void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength, char* name) {
     int value;
 
@@ -396,7 +423,6 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             }
 
             if (value) {
-                printf("Value true !\n");
                 fprintf(graph, "_%d_%s [style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
             } else {
                 fprintf(graph, "_%d_%s ;\n", i, name);
