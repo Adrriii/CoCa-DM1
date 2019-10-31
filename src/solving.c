@@ -10,9 +10,6 @@ extern bool DEBUG;
 
 extern void printd(const char* message);
 
-
-// TODO : enlever toute la duplication de code !
-
 Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node) {
     char name[MAX_NAME_SIZE];
     snprintf(name, MAX_NAME_SIZE, "x(%d, %d, %d, %d)", number, position, k, node);
@@ -81,7 +78,6 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         int size = orderG(graphs[currentGraph]);
         Z3_ast orPositionFormula[k + 1];
 
-        //TODO Parler dans le rapport de l'opti 1 | k - 1 qui fail ?
         for (int position = 0; position <= k; position++) {
             Z3_ast singleton[size];
 
@@ -235,8 +231,6 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
 
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
-    printd("Welcome in graphsToPathFormula !");
-
     Z3_ast formulaParts[] = {
         firstPartFormula(ctx, graphs, numGraphs, pathLength),
         secondPartFormula(ctx, graphs, numGraphs, pathLength),
@@ -244,8 +238,6 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
         fourthPartFormula(ctx, graphs, numGraphs, pathLength),
         fifthPartFormula(ctx, graphs, numGraphs, pathLength)
     };
-
-
 
     return Z3_mk_and(ctx,5,formulaParts);
 }
@@ -279,7 +271,6 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
 
     Z3_ast orFormula[kMax + 1];
 
-    // De part la simplicité des chemins, il ne peut y avoir k = 0
     for (int i = 0; i <= kMax; i++) {
         orFormula[i] = graphsToPathFormula(
             ctx,
@@ -418,6 +409,7 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
                 fprintf(graph, "_%d_%s [final=1,color=red][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
                 continue;
             }
+
             value = false;
             for (int pos = 0; pos <= pathLength; pos++) {
                 Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, node);
