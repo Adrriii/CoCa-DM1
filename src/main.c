@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <Graph.h>
 #include <Parsing.h>
+#include <string.h>
 
 #include "Solving.h"
 
@@ -65,7 +66,30 @@ void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
     }
 }
 
+static Z3_model upgrade2(Z3_context ctx, Z3_model model, Graph* graphs, int numGraphs) {
+    int pathLength = getSolutionLengthFromModel(ctx, model, graphs);
 
+    const char* baseString = Z3_model_to_string(ctx, model);
+    char string[strlen(baseString)];
+
+    strncpy(string, baseString, strlen(baseString));
+    char delim[] = "\n";
+    char *ptr = strtok(string, delim);
+
+    while(ptr) {
+        int i, position, k, node;
+        char value[5];
+        sscanf(ptr, "x(%d, %d, %d, %d) -> %s", &i, &position, &k, &node, value);
+
+        if (strcmp(value, "true") == 0 && k != pathLength) {
+            // mettre cette var à false dans le model.
+        } 
+
+        ptr = strtok(NULL, delim);
+    }
+
+
+}
 
 /**
  * @brief Decision problem for Distance Commune
