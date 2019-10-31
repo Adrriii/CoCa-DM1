@@ -44,6 +44,8 @@ bool WRITE_DOT          = false;
 bool STOP_AT_FIRST      = true;
 bool INCREASE_ORDER     = true;
 
+char *filename = NULL;
+
 /**
  * @brief Print message if DEBUG flag is set.
  * @param message the message to print.
@@ -189,7 +191,12 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
 
             if(WRITE_DOT) {
                 char name[50];
-                snprintf(name, 50, "result-l%d", k);
+                if (!filename) {
+                    snprintf(name, 50, "result-l%d", k);
+                } else {
+                    snprintf(name, 50, "%s-l%d", filename, k);
+                }
+
                 createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, k, name);
             }
             break;
@@ -249,7 +256,6 @@ int main(int argc, char **argv) {
     welcome();
 
     int opt;
-    char *filename = NULL;
 
     while ((opt = getopt(argc, argv, "DhvFsdatfo:")) != -1) {
         switch (opt)
