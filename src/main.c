@@ -155,8 +155,8 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
     bool keepSearching = true;
 
-    int k = (INCREASE_ORDER)? 1:kMax;
-    int limit = (INCREASE_ORDER)? kMax + 1: 0;
+    int k = (INCREASE_ORDER)? 0:kMax;
+    int limit = (INCREASE_ORDER)? kMax + 1: -1;
     int step = (INCREASE_ORDER)? 1:-1;
 
     for (; k != limit && keepSearching; k += step) {

@@ -277,11 +277,11 @@ int kMaxValue(Graph* graphs, unsigned numGraphs) {
 Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
 
-    Z3_ast orFormula[kMax];
+    Z3_ast orFormula[kMax + 1];
 
     // De part la simplicité des chemins, il ne peut y avoir k = 0
-    for (int i = 1; i <= kMax; i++) {
-        orFormula[i - 1] = graphsToPathFormula(
+    for (int i = 0; i <= kMax; i++) {
+        orFormula[i] = graphsToPathFormula(
             ctx,
             graphs,
             numGraphs,
@@ -289,7 +289,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
         );
     }
 
-    return Z3_mk_or(ctx, kMax, orFormula);
+    return Z3_mk_or(ctx, kMax + 1, orFormula);
 }
 
 
