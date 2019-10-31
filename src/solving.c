@@ -280,7 +280,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
     Z3_ast orFormula[kMax];
 
     // De part la simplicité des chemins, il ne peut y avoir k = 0
-    for (int i = 1; i < kMax; i++) {
+    for (int i = 1; i <= kMax; i++) {
         orFormula[i - 1] = graphsToPathFormula(
             ctx,
             graphs,
@@ -289,7 +289,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
         );
     }
 
-    return Z3_mk_or(ctx, kMax - 1, orFormula);
+    return Z3_mk_or(ctx, kMax, orFormula);
 }
 
 
