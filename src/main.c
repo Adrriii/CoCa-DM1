@@ -41,6 +41,7 @@ bool BY_DEPTH           = false;
 bool DISPLAY_FULL_PATH  = false;
 bool WRITE_DOT          = false;
 bool STOP_AT_FIRST      = true;
+bool INCREASE_ORDER     = true;
 
 /**
  * @brief Print message if DEBUG flag is set.
@@ -79,7 +80,7 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
         switch (isSat)
         {
         case Z3_L_FALSE:
-            printf("Formula is not satisfiable.\n");
+            printf("No simple valid path in all all graphs\n");
             break;
 
         case Z3_L_UNDEF:
@@ -116,17 +117,21 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
     bool keepSearching = true;
 
-    for (int k = 1; k <= kMax && keepSearching; k++) {
+    int k = (INCREASE_ORDER)? 1:kMax;
+    int limit = (INCREASE_ORDER)? kMax + 1: 0;
+    int step = (INCREASE_ORDER)? 1:-1;
+
+    for (; k != limit && keepSearching; k += step) {
         result = graphsToPathFormula(ctx, graphs, numGraphs, k);
         Z3_lbool isSat = isFormulaSat(ctx, result);
         switch (isSat)
         {
         case Z3_L_FALSE:
-            printf("Formula is not satisfiable for k = %d.\n", k);
+            printf("No simple valid path of length %d in all graphs\n", k);
             break;
 
         case Z3_L_UNDEF:
-            printf("We don't know if formula is satisfiable for k = %d.\n", k);
+            printf("We don't know if formula is satisfiable for k = %d\n", k);
             break;
 
         case Z3_L_TRUE:
@@ -236,6 +241,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "-d require -s to be present (if present put it before).\n");
                 exit(EXIT_FAILURE);
             }
+            INCREASE_ORDER = false;
             break;
 
         // TODO better argument handler
