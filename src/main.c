@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <Graph.h>
 #include <Parsing.h>
+#include <string.h>
 
 #include "Solving.h"
 
@@ -32,7 +33,6 @@ $$$\n\
    \e[0m \n\tDevoir maison Complexité et Calculabilité\n\n\n");
 }
 
-// TODO : desactivate for return
 bool DEBUG = false;
 
 bool VERBOSE            = false;
@@ -42,6 +42,8 @@ bool DISPLAY_FULL_PATH  = false;
 bool WRITE_DOT          = false;
 bool STOP_AT_FIRST      = true;
 bool INCREASE_ORDER     = true;
+
+char *filename = NULL;
 
 /**
  * @brief Print message if DEBUG flag is set.
@@ -53,6 +55,7 @@ void printd(const char* message) {
     }
 }
 
+
 /**
  * @brief Display all graphs
  * 
@@ -63,6 +66,34 @@ void displayAllGraphs(Graph* graphs, unsigned numGraphs) {
     for (int i = 0; i < numGraphs; i++) {
         printGraph(graphs[i]);
     }
+}
+
+/**
+ * Début de code pour l'amélioration deux, je sais pas ce qu'il faut faire (comment modifier le model ?)
+ */
+static Z3_model upgrade2(Z3_context ctx, Z3_model model, Graph* graphs, int numGraphs) {
+    int pathLength = getSolutionLengthFromModel(ctx, model, graphs);
+
+    const char* baseString = Z3_model_to_string(ctx, model);
+    char string[strlen(baseString)];
+
+    strncpy(string, baseString, strlen(baseString));
+    char delim[] = "\n";
+    char *ptr = strtok(string, delim);
+
+    while(ptr) {
+        int i, position, k, node;
+        char value[5];
+        sscanf(ptr, "x(%d, %d, %d, %d) -> %s", &i, &position, &k, &node, value);
+
+        if (strcmp(value, "true") == 0 && k != pathLength) {
+            // mettre cette var à false dans le model.
+        } 
+
+        ptr = strtok(NULL, delim);
+    }
+
+
 }
 
 /**
@@ -83,10 +114,9 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
 
     Z3_lbool isSat = isFormulaSat(ctx,result);
 
-        switch (isSat)
-        {
+    switch (isSat) {
         case Z3_L_FALSE:
-            printf("No simple valid path in all all graphs\n");
+            printf("No simple valid path in all graphs\n");
             break;
 
         case Z3_L_UNDEF:
@@ -101,11 +131,24 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
             if (FORMULA_DISPLAY) {
                 printf("%s\n", Z3_ast_to_string(ctx, result));
             }
+
             if (DISPLAY_FULL_PATH) {
                 printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, nb);
             }
+
+            if(WRITE_DOT) {
+                char name[50];
+                if (!filename) {
+                    snprintf(name, 50, "result-l%d", nb);
+                } else {
+                    snprintf(name, 50, "%s-l%d", filename, nb);
+                }
+
+                createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, nb, name);
+            }
+
             break;
-        }
+    }
 
     Z3_del_context(ctx);
 
@@ -129,45 +172,49 @@ void findByDepth(Graph* graphs, unsigned numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
     bool keepSearching = true;
 
-    int k = (INCREASE_ORDER)? 1:kMax;
-    int limit = (INCREASE_ORDER)? kMax + 1: 0;
+    int k = (INCREASE_ORDER)? 0:kMax;
+    int limit = (INCREASE_ORDER)? kMax + 1: -1;
     int step = (INCREASE_ORDER)? 1:-1;
 
     for (; k != limit && keepSearching; k += step) {
         result = graphsToPathFormula(ctx, graphs, numGraphs, k);
         Z3_lbool isSat = isFormulaSat(ctx, result);
-        switch (isSat)
-        {
-        case Z3_L_FALSE:
-            printf("No simple valid path of length %d in all graphs\n", k);
-            break;
 
-        case Z3_L_UNDEF:
-            printf("We don't know if formula is satisfiable for k = %d\n", k);
-            break;
+        switch (isSat) {
+            case Z3_L_FALSE:
+                printf("No simple valid path of length %d in all graphs\n", k);
+                break;
 
-        case Z3_L_TRUE:
-            printf("There is a simple valid path of length %d in all graphs\n", k);
+            case Z3_L_UNDEF:
+                printf("We don't know if formula is satisfiable for k = %d\n", k);
+                break;
 
-            if (STOP_AT_FIRST) {
-                keepSearching = false;
-            }
+            case Z3_L_TRUE:
+                printf("There is a simple valid path of length %d in all graphs\n", k);
 
-            if (FORMULA_DISPLAY) {
-                printf("%s\n", Z3_ast_to_string(ctx, result));
-            }
+                if (STOP_AT_FIRST) {
+                    keepSearching = false;
+                }
 
-            if (DISPLAY_FULL_PATH) {
-                printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
-            }
+                if (FORMULA_DISPLAY) {
+                    printf("%s\n", Z3_ast_to_string(ctx, result));
+                }
 
-            if(WRITE_DOT) {
-                char name[50];
-                snprintf(name, 50, "result-l%d.dot", k);
-                printf("WRITE\n");
-                createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, k, name);
-            }
-            break;
+                if (DISPLAY_FULL_PATH) {
+                    printPathsFromModel(ctx, getModelFromSatFormula(ctx, result), graphs, numGraphs, k);
+                }
+
+                if(WRITE_DOT) {
+                    char name[50];
+                    if (!filename) {
+                        snprintf(name, 50, "result-l%d", k);
+                    } else {
+                        snprintf(name, 50, "%s-l%d", filename, k);
+                    }
+
+                    createDotFromModel(ctx, getModelFromSatFormula(ctx, result),graphs,numGraphs, k, name);
+                }
+                break;
         }
     }
 
@@ -224,7 +271,6 @@ int main(int argc, char **argv) {
     welcome();
 
     int opt;
-    char *filename = NULL;
 
     while ((opt = getopt(argc, argv, "DhvFsdatfo:")) != -1) {
         switch (opt)

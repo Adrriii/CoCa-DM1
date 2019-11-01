@@ -5,13 +5,10 @@
 #include <string.h>
 
 #define MAX_NAME_SIZE 50
-
+#define DOT_DIRECTORY "sol/"
 extern bool DEBUG;
 
 extern void printd(const char* message);
-
-
-// TODO : enlever toute la duplication de code !
 
 Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node) {
     char name[MAX_NAME_SIZE];
@@ -23,7 +20,7 @@ Z3_ast getNodeVariable(Z3_context ctx, int number, int position, int k, int node
 
 /**
  * @brief Get the Source Node object
- * 
+ *
  * @param graph graph in wich looking for source node
  * @return unsigned the index of the source node
  */
@@ -37,7 +34,7 @@ static unsigned getSourceNode(Graph graph) {
 
 /**
  * @brief Get the Target Node object
- * 
+ *
  * @param graph graph in wich looking for target node
  * @return unsigned the index of the target node
  */
@@ -55,14 +52,14 @@ static unsigned getTargetNode(Graph graph) {
 static Z3_ast firstPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k) {
     printd("First formula !");
     Z3_ast sourceTargetAndFormula[numGraphs];
-    
+
     for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
         Z3_ast tmpFormula[] = {
             getNodeVariable(ctx, currentGraph, 0, k, getSourceNode(graphs[currentGraph])),
             getNodeVariable(ctx, currentGraph, k, k, getTargetNode(graphs[currentGraph]))
         };
 
-        sourceTargetAndFormula[currentGraph] = Z3_mk_and(ctx,2,tmpFormula); 
+        sourceTargetAndFormula[currentGraph] = Z3_mk_and(ctx,2,tmpFormula);
     }
 
     // Return graph big and formula
@@ -81,7 +78,6 @@ static Z3_ast secondPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraph
         int size = orderG(graphs[currentGraph]);
         Z3_ast orPositionFormula[k + 1];
 
-        //TODO Parler dans le rapport de l'opti 1 | k - 1 qui fail ?
         for (int position = 0; position <= k; position++) {
             Z3_ast singleton[size];
 
@@ -267,8 +263,6 @@ static Z3_ast upgrade2Formula(Z3_context ctx, Graph* graphs, unsigned numGraphs,
 }
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
-    printd("Welcome in graphsToPathFormula !");
-    
     Z3_ast formulaParts[] = {
         firstPartFormula(ctx, graphs, numGraphs, pathLength),
         secondPartFormula(ctx, graphs, numGraphs, pathLength),
@@ -277,15 +271,13 @@ Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs
         fifthPartFormula(ctx, graphs, numGraphs, pathLength)
     };
 
-    
-
     return Z3_mk_and(ctx,5,formulaParts);
 }
 
 
 /**
  * @brief Find the value for k_max
- * 
+ *
  * @param graphs array of graphs to compute with
  * @param numGraphs size of graphs array
  * @return int the value of k_max
@@ -295,7 +287,7 @@ int kMaxValue(Graph* graphs, unsigned numGraphs) {
 
     int minSize = orderG(graphs[0]);
     int tmpSize;
-    
+
     for (int i = 1; i < numGraphs; i++) {
         if ((tmpSize = orderG(graphs[i])) < minSize) {
             minSize = tmpSize;
@@ -309,11 +301,10 @@ int kMaxValue(Graph* graphs, unsigned numGraphs) {
 Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs) {
     int kMax = kMaxValue(graphs, numGraphs);
 
-    Z3_ast orFormula[kMax];
+    Z3_ast orFormula[kMax + 1];
 
-    // De part la simplicité des chemins, il ne peut y avoir k = 0
-    for (int i = 1; i < kMax; i++) {
-        orFormula[i - 1] = graphsToPathFormula(
+    for (int i = 0; i <= kMax; i++) {
+        orFormula[i] = graphsToPathFormula(
             ctx,
             graphs,
             numGraphs,
@@ -321,7 +312,7 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
         );
     }
 
-    return Z3_mk_or(ctx, kMax - 1, orFormula);
+    return Z3_mk_or(ctx, kMax + 1, orFormula);
 }
 
 
@@ -331,7 +322,7 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
     for (int i = 0; i < numGraph; i++) {
         size = orderG(graphs[i]);
         printf("Path in graph %d\n", i);
-        
+
         for (int pos = 0; pos <= pathLength; pos++) {
             for (int node = 0; node < size; node++) {
 
@@ -347,35 +338,27 @@ void printPathsFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numG
 }
 
 
-//TODO refaire totalement cette fonction ! utiliser le model, pas baseString
 /**
- * @brief aux function for getSolutionLengthFromModel, to know of there is a node in given position for k
+ * @brief Looking in model if a position in a graph is occuped
  * 
- * @param graph 
- * @param position 
- * @param pathLength 
- * @param baseString 
- * @return true 
- * @return false 
+ * @param ctx Z3 context
+ * @param graphs array of graphs
+ * @param graphIndex index of current graph
+ * @param position position to check in model
+ * @param k value of current path length
+ * @param model Z3 model
+ * @return true if a node is at the given position
+ * @return false if not
  */
-static bool isPositionOccuped(int graph, int position, int pathLength, const char* baseString) {
-    char string[strlen(baseString)];
-    strncpy(string, baseString, strlen(baseString));
+static bool isPositionOccuped(Z3_context ctx, Graph *graphs, int graphIndex, int position, int k, Z3_model model) {
+    int size = orderG(graphs[graphIndex]);
 
-    char delim[] = "\n";
+    for (int node = 0; node < size; node++) {
+        Z3_ast currentVar = getNodeVariable(ctx, graphIndex, position, k, node);
 
-    char *ptr = strtok(string, delim);
-
-    while(ptr) {
-        int i, pos, k, node;
-        char value[5];
-        sscanf(ptr, "x(%d, %d, %d, %d) -> %s", &i, &pos, &k, &node, value);
-
-        if (i == graph && pos == position && k == pathLength && (strcmp(value, "true") == 0)) {
+        if (valueOfVarInModel(ctx, model, currentVar)) {
             return true;
         }
-
-        ptr = strtok(NULL, delim);
     }
 
     return false;
@@ -385,15 +368,14 @@ static bool isPositionOccuped(int graph, int position, int pathLength, const cha
 int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
     int nbGraphs = -1;
 
-    const char* baseString = Z3_model_to_string(ctx, model); 
+    const char* baseString = Z3_model_to_string(ctx, model);
     char string[strlen(baseString)];
 
     strncpy(string, baseString, strlen(baseString));
-
     char delim[] = "\n";
-
     char *ptr = strtok(string, delim);
 
+    // Looking in the model for size of graphs. Needed for kMaxValue
     while(ptr) {
         int i, position, k, node;
         char value[5];
@@ -407,10 +389,11 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
 
     for (int k = 0; k <= kMax; k++) {
         bool found = true;
+
         for (int i = 0; i <= nbGraphs; i++) {
             for (int position = 0; position <= k; position++) {
-                if (!isPositionOccuped(i, position, k, baseString)) {
-                    found = false;  
+                if (!isPositionOccuped(ctx, graphs, i, position, k, model)) {
+                    found = false;
                     break;
                 }
             }
@@ -423,6 +406,7 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
         }
     }
 
+    // Error ?
     return -1;
 }
 
@@ -430,8 +414,20 @@ int getSolutionLengthFromModel(Z3_context ctx, Z3_model model, Graph *graphs) {
 void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGraph, int pathLength, char* name) {
     int value;
 
-    FILE* graph = fopen(name, "w");
-    fprintf(graph, "diagraph %s{\n", name);
+    char realName[100];
+
+    snprintf(realName, 100, "%s%s.dot", DOT_DIRECTORY, name);
+
+    system("mkdir "DOT_DIRECTORY" 2> /dev/null"); // Hide error when sol/ already exists
+    FILE* graph = fopen(realName, "w");
+    
+
+    sscanf(name, "%s.dot", name);
+    for (int i = 0; i < strlen(name); i++) {
+        if (name[i] == '-') name[i] = '_';
+    }
+
+    fprintf(graph, "digraph %s{\n", name);
 
     for (int i = 0; i < numGraph; i++) {
         for (int node = 0; node < orderG(graphs[i]); node++) {
@@ -445,6 +441,7 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
                 fprintf(graph, "_%d_%s [final=1,color=red][style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
                 continue;
             }
+
             value = false;
             for (int pos = 0; pos <= pathLength; pos++) {
                 Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, node);
@@ -457,7 +454,7 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             if (value) {
                 fprintf(graph, "_%d_%s [style=filled,fillcolor=lightblue];\n", i, getNodeName(graphs[i], node));
             } else {
-                fprintf(graph, "_%d_%s ;\n", i, name);
+                fprintf(graph, "_%d_%s ;\n", i, getNodeName(graphs[i], node));
             }
         }
 
@@ -465,11 +462,15 @@ void createDotFromModel(Z3_context ctx, Z3_model model, Graph *graphs, int numGr
             for (int secondNode = 0; secondNode < orderG(graphs[i]); secondNode++) {
                 if (isEdge(graphs[i], firstNode, secondNode)) {
                     value = false;
-                    for (int pos = 0; pos <= pathLength; pos++) {
-                        Z3_ast currentVar = getNodeVariable(ctx, i, pos, pathLength, secondNode);
-                        if (valueOfVarInModel(ctx,model,currentVar)) {
-                            value = true;
-                            break;
+
+                    // Don't take the return
+                    if (!(isSource(graphs[i], secondNode) && isTarget(graphs[i], firstNode))) {
+                        for (int pos = 0; pos <= pathLength; pos++) {
+                            if (valueOfVarInModel(ctx, model, getNodeVariable(ctx, i, pos, pathLength, firstNode))) {
+                                if (valueOfVarInModel(ctx,model,getNodeVariable(ctx, i, pos + 1, pathLength, secondNode))) {
+                                    value = true;
+                                }
+                            }
                         }
                     }
 
