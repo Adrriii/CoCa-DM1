@@ -304,12 +304,12 @@ Z3_ast graphsToFullFormula(Z3_context ctx, Graph *graphs,unsigned int numGraphs)
     Z3_ast orFormula[kMax + 1];
 
     for (int i = 0; i <= kMax; i++) {
-        orFormula[i] = graphsToPathFormula(
-            ctx,
-            graphs,
-            numGraphs,
-            i
-        );
+        Z3_ast tmpFormula[] = {
+            graphsToPathFormula(ctx, graphs, numGraphs, i),
+            upgrade2Formula(ctx, graphs, numGraphs, i, kMax)
+        };
+        
+        orFormula[i] = Z3_mk_and(ctx, 2, tmpFormula);
     }
 
     return Z3_mk_or(ctx, kMax + 1, orFormula);
