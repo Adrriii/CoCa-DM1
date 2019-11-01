@@ -233,6 +233,38 @@ static Z3_ast fifthPartFormula(Z3_context ctx, Graph* graphs, unsigned numGraphs
     return Z3_mk_and(ctx,numGraphs,andFormulaFinal);
 }
 
+static Z3_ast upgrade2Formula(Z3_context ctx, Graph* graphs, unsigned numGraphs, int k, int kMax) {
+    Z3_ast graphAndFormula[numGraphs];
+
+    for (int currentGraph = 0; currentGraph < numGraphs; currentGraph++) {
+        Z3_ast nodeAndFormula[orderG(graphs[currentGraph])];
+
+        for (int node = 0; node < orderG(graphs[currentGraph]); node++) {
+            Z3_ast otherKAndFormula[kMax]; // don't take k itself
+            int index = 0;
+
+            for (int otherK = 0; otherK <= kMax; otherK++) {
+                if (otherK == k) {
+                    continue;
+                }
+                Z3_ast posAndFormula[otherK + 1];
+
+                for (int pos = 0; pos <= otherK; pos++) {
+                    posAndFormula[pos] = Z3_mk_not(ctx, getNodeVariable(ctx, currentGraph, pos, otherK, node));
+                }
+
+                otherKAndFormula[index] = Z3_mk_and(ctx, otherK + 1, posAndFormula);
+                index++;
+            }
+
+            nodeAndFormula[node] = Z3_mk_and(ctx, kMax, otherKAndFormula);
+        }
+
+        graphAndFormula[currentGraph] = Z3_mk_and(ctx, orderG(graphs[currentGraph]), nodeAndFormula);
+    }
+
+    return Z3_mk_and(ctx, numGraphs, graphAndFormula);
+}
 
 Z3_ast graphsToPathFormula( Z3_context ctx, Graph *graphs,unsigned int numGraphs, int pathLength) {
     printd("Welcome in graphsToPathFormula !");
