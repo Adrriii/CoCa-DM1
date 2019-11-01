@@ -11,27 +11,24 @@
 extern int kMaxValue(Graph* graphs, unsigned numGraphs);
 
 /**
- * Remove ?
- **/ 
-void welcome() {
-    printf("\e[31m\n\
-         .e$.\n\
-        d$\" .d\n\
-      e$P   $%%\n\
-     $$F\n\
-   .$$\"   .$\"3   .$\"\"  .$P $$\n\
-  .$$F   d$  4  d$ d$ z$\" J$%%\n\
-  $$P   $$ \".$z$$  ^ z$\" .$P\n\
- $$$   d$F  J $$F   z$$  $$ .\n\
-4$$F   $$  4\" $$   z$$  $$\".\"\n\
-$$$   4$$.d\" 4$$ .$3$$.$$$e%%\n\
-$$$    $$*    $$$\" ^$$\"'$$\n\
-$$$\n\
-'$$c          .e$$$$$$$$e\n\
- \"$$b.   .e$*\"     \"$$$$$$$\n\
-   \"*$$$*\"\n\
-   \e[0m \n\tDevoir maison Complexité et Calculabilité\n\n\n");
-}
+*          .e$.
+*         d$" .d
+*       e$P   $%%
+*      $$F
+*    .$$"   .$"3   .$""  .$P $$
+*   .$$F   d$  4  d$ d$ z$" J$%%
+*   $$P   $$ ".$z$$  ^ z$" .$P
+*  $$$   d$F  J $$F   z$$  $$ .
+* 4$$F   $$  4" $$   z$$  $$\".\"
+* $$$   4$$.d" 4$$ .$3$$.$$$e%%
+* $$$    $$*    $$$" ^$$\"'$$
+* $$$
+* '$$c          .e$$$$$$$$e
+*  "$$b.   .e$*"     \"$$$$$$$
+*    \"*$$$*\"
+*
+*   Devoir maison de Complexité et Calculabilité
+**/
 
 bool DEBUG = false;
 
@@ -89,7 +86,7 @@ bool fullFormula(Graph* graphs, unsigned numGraphs) {
 
     switch (isSat) {
         case Z3_L_FALSE:
-            printf("No simple valid path in all graphs\n");
+            printf("No simple valid path of equal length in all graphs\n");
             break;
 
         case Z3_L_UNDEF:
@@ -241,7 +238,6 @@ int main(int argc, char **argv) {
         usage(stderr);
         exit(EXIT_FAILURE);
     }
-    welcome();
 
     int opt;
 
