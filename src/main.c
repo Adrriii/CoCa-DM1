@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
             break;
         case 'h':
     printd("- h option selected.");
-            usage(stdin);
+            usage(stdout);
             break;
             
         case 'v':
